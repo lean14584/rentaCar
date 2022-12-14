@@ -9,24 +9,12 @@ use Livewire\Component;
 
 class CalendarRentalController extends Component
 {
-    public $msj;
-    public $data;
-    // public $startsAt;
-    // public $endsAt;
-    public $initialYear;
-    public $initialMonth;
-    // public $months;
-
-    // public $weekStartsAt;
-    // public $weekEndsAt;
-
     public $selectedMonth;
     public $selectedYear;
 
     protected $dt; //dataTime
     public $daysInMonth;
     public $rentals;
-    public $day;
     public $colors = [
         "bg-primary",
         "bg-secondary",
@@ -35,32 +23,8 @@ class CalendarRentalController extends Component
         "bg-warning",
         "bg-info"
     ];
-
-    protected $listeners;
-
-    public function mount(
-        $initialYear = null,
-        $initialMonth = null,
-        $years = null,
-        // $weekStartsAt = null,
-    ) {
-        // $this->weekStartsAt = $weekStartsAt ?? Carbon::SUNDAY;
-        // $this->weekEndsAt = $this->weekStartsAt == Carbon::SUNDAY
-        //     ? Carbon::SATURDAY
-        //     : collect([0, 1, 2, 3, 4, 5, 6])->get($this->weekStartsAt + 6 - 7);
-
-        $this->initialYear = $initialYear ?? Carbon::today()->year;
-        $this->initialMonth = $initialMonth ?? Carbon::today()->month;
-
-        // $meses = Carbon::parse(Carbon::now()->startOfYear())->monthsUntil(Carbon::now()->endOfYear());
-
-        // foreach ($meses as $key => $mes) {
-        //     dump($mes);
-        // }
-
-        // $this->startsAt = Carbon::createFromDate($initialYear, $initialMonth, 1)->startOfDay();
-        // $this->endsAt = $this->startsAt->clone()->endOfMonth()->startOfDay();
-    }
+    public $total;
+    private $periodDaysPrevMonth = [];
 
     public function render()
     {
@@ -76,50 +40,46 @@ class CalendarRentalController extends Component
     public function updatedSelectedMonth()
     {
         $this->dt = Carbon::createFromDate($this->selectedYear, $this->selectedMonth);
-        // dd($this->dt);
-        // $this->daysInMonth = $this->dt->daysInMonth;
         $this->daysInMonth = $this->getCurrentMonthDays($this->dt);
-        // dd($monthDays);
         $this->rentals = $this->rentals();
 
         $patentes = [];
+        $patentesSubTotal = [];
         $patentesColors = [];
         $patentesTotal = [];
+        $patentesArray = [];
         $test = [];
 
         foreach ($this->rentals as $key => $rental) {
-            // dd($rental);
             foreach ($rental as $key2 => $values) {
                 $randColor = array_rand($this->colors, 1);
-                
+
+                $startDate = Carbon::createFromDate($values['fechaInicio']);
+                if ($startDate->isoFormat('M') == $this->dt->isoFormat('M')) {
+                    $patentesArray = array('patentes' => $values['patente'], 'total' => $values['total']);
+
+                    if (array_key_exists($patentesArray['patentes'], $patentesTotal)) {
+                        $patentesTotal[$patentesArray['patentes']] += $patentesArray['total'];
+                    } else {
+                        $patentesTotal[$patentesArray['patentes']] = $patentesArray['total'];
+                    }
+                }
+
                 foreach ($values['periodDays'] as $key => $value) {
                     array_push($patentes, $values['patente'] . '-' . $value);
                     $keys = $values['patente'] . '-' . $value;
-                    if ($key == 0) {                        
-                        $patentesTotal = Arr::add($patentesTotal, $keys, $values['total']);
+                    if ($key == 0  && $startDate->isoFormat('M') == $this->dt->isoFormat('M')) {
+                        $patentesSubTotal = Arr::add($patentesSubTotal, $keys, $values['total']);
                     }
                     $patentesColors = Arr::add($patentesColors, $keys, $this->colors[$randColor]);
-                    array_push($test, $key. '-' . $value);
+                    array_push($test, $key . '-' . $value);
                 }
             }
         }
-
-        // dump($patentes);
-        // dump($patentesTotal);
-        // dump($test);
-
-        $daysInMonth = collect($this->daysInMonth)->map(function ($days) {
-            return $days->isoFormat('D');
-        });
-        $this->emit("rentalAdded", $this->rentals, $daysInMonth, $patentes, $patentesColors, $patentesTotal);
+        // call the "rentalAdded" function in the view script
+        $this->emit("rentalAdded", $patentes, $patentesColors, $patentesTotal, $patentesSubTotal);
     }
 
-    // public function updatedSelectedMonth()
-    // {
-    //     // $this->rentals;
-    //     $this->emit('rentalAdded', $this->rentals);
-    //     // $this->emit("updatedSelectedMonth");
-    // }
 
     public function updatedSelectedYear()
     {
@@ -170,62 +130,68 @@ class CalendarRentalController extends Component
         $data = DB::table('alquilers as al')
             ->join('autos as a', 'a.id', 'al.idAuto')
             ->join('clientes as c', 'c.id', 'al.idCliente')
-            ->select('al.*',  'a.patente as patente', 'c.nombre as nombre', 'al.total')->get();
-        // ->where('fechaInicio', 'like', '%' . $this->search . '%')->paginate($this->pagination);
-        // dd($this->dt->isoFormat('M/Y'));
-        // dd($data);
-        // $groupedPatente = $data->groupBy('patente');
-        // dd($groupedPatente);
-        $filteredData = Arr::where($data->all(), function ($value, $key) {
-            $monthRental = Carbon::createFromDate($value->fechaInicio);
-            // dump($monthRental->isoFormat('M/Y'));
-            // dump($this->dt->isoFormat('M/Y'));
-            return $monthRental->isoFormat('M/Y') == $this->dt->isoFormat('M/Y');
+            ->select('a.patente as patente', 'c.nombre as nombre', 'al.fechaInicio', 'al.fechaFin', 'al.total')->get();
+
+        $periodDaysPrevMonth = $data->map(function ($value) {
+            $monthRentalStart = Carbon::createFromDate($value->fechaInicio);
+            if ($monthRentalStart->isoFormat('Y') == $this->dt->isoFormat('Y')) {
+                $daysPrevMonth = array();
+                if ($monthRentalStart->isoFormat('M') == $this->dt->isoFormat('M') - 1) {
+                    $startDate = Carbon::parse($value->fechaInicio);
+                    $endDate = Carbon::parse($value->fechaFin);
+                    if ($startDate->endOfMonth() < $endDate) {
+                        $daysNextMonth = $startDate->endOfMonth()->diffInDays($endDate) + 1;
+                        for ($i = 0; $i < $daysNextMonth; $i++) {
+                            $daysPrevMonth[$i] = $i + 1;
+                        }
+                    }
+                }
+                $value->periodDaysPrevMonth = $daysPrevMonth;
+            }
+            return $value;
         });
-        // dump($filteredData);
-        // $period = Carbon::createFromDate($filteredData)
+
+        $filteredData = Arr::where($periodDaysPrevMonth->all(), function ($value, $key) {
+            $monthRentalStart = Carbon::createFromDate($value->fechaInicio);
+            $monthRentalEnd = Carbon::createFromDate($value->fechaFin);
+
+            return $monthRentalStart->isoFormat('M/Y') == $this->dt->isoFormat('M/Y') || $monthRentalEnd->isoFormat('M/Y') == $this->dt->isoFormat('M/Y');
+        });
+
         $processedData = [];
         foreach ($filteredData as $key => $data) {
             $startDate = Carbon::parse($data->fechaInicio);
-            // dd($startDate);
-            // dd($startDate->isoFormat('D'));
-            // dd($startDate);
             $endDate = Carbon::parse($data->fechaFin);
-            // dd($endDate);
-
-            $diffInDays = $endDate->diffInDays($startDate);
-            // dd($diffInDays);
             $periodDays = [];
             $periodDaysNextMonth = [];
 
-            $startDateDay = $startDate->isoFormat('D');
-            $endDateDay = $startDate->isoFormat('D') + $diffInDays;
-            $periodDays[] = $startDate->copy()->isoFormat('D');
-            $startDateInitial = $startDate->isoFormat('M');
-            for ($i = $startDateDay; $i < $endDateDay; $i++) {
-                // dump($startDate->isoFormat('M') );
-                // dump($endDate->isoFormat('D'));
-                // dump($this->dt->endOfMonth()->isoFormat('D'));
-                if ($startDate->isoFormat('D') != $this->dt->endOfMonth()->isoFormat('D') && $startDate->isoFormat('M') != $startDateInitial + 1) {
-                    $periodDays[] = $startDate->addDay()->startOfDay()->copy()->isoFormat('D');
-                } else {
-                    $periodDaysNextMonth[] = $startDate->addDay()->startOfDay()->copy()->isoFormat('D');
-                }            
-                
+            $diffInDays = $endDate->diffInDays($startDate);
+            if ($startDate->isoFormat('M') == $this->dt->isoFormat('M')) {
+                $periodDays[] = $startDate->copy()->isoFormat('D');
+                $startDateDay = $startDate->isoFormat('D');
+                $endDateDay = $startDate->isoFormat('D') + $diffInDays;
+            } else {
+                $periodDays[] = $endDate->copy()->startOfMonth()->isoFormat('D');
+                $startDatePrevMonth = $endDate->copy()->startOfMonth();
+                $startDateDay = $endDate->copy()->startOfMonth()->isoFormat('D');
+                $endDateDay = $endDate->isoFormat('D');
             }
-            // dump($periodDays);
-            // dump($periodDaysNextMonth);
-            // $processedData[] = collect($data)->put('periodDays', $periodDays)->all();
-            $processedData[] = collect($data)->merge(['periodDays' => $periodDays, 'periodDaysNextMonth' => $periodDaysNextMonth])->all();
-        }
-        // dump($processedData);
-        // dump(collect($processedData)->all());
-        // $groupedPatente = collect($filteredData)->groupBy('patente');
-        $groupedPatente = collect($processedData)->groupBy('patente')->all();
-        // dump($groupedPatente);
-        // dd(collect($filteredData)->sum('total'));
+            $startDateInitial = $startDate->isoFormat('M');
 
-        // dd($data);
+            for ($i = $startDateDay; $i < $endDateDay; $i++) {
+                if ($startDate->isoFormat('D') != $this->dt->endOfMonth()->isoFormat('D') && $startDate->isoFormat('M') != $startDateInitial + 1) {
+                    if ($startDate->isoFormat('M') == $this->dt->isoFormat('M')) {
+                        $periodDays[] = $startDate->addDay()->copy()->isoFormat('D');
+                    } else {
+                        $periodDays[] = $startDatePrevMonth->addDay()->copy()->isoFormat('D');
+                    }
+                } else {
+                    $periodDaysNextMonth[] = $startDate->addDay()->copy()->startOfDay()->isoFormat('D');
+                }
+            }
+            $processedData[] = collect($data)->merge(['periodDays' => $periodDays, 'periodDaysNextMonth' => $periodDaysNextMonth, 'periodDaysPrevMonth' => $this->periodDaysPrevMonth])->all();
+        }
+        $groupedPatente = collect($processedData)->groupBy('patente')->all();
         return $groupedPatente;
     }
 }

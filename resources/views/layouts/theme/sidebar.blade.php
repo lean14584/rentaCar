@@ -1,7 +1,7 @@
  <div class="sidebar-wrapper sidebar-theme">
     <nav id="compactSidebar">
 		<ul class="menu-categories">
-			@can('Marcas_Menu')
+			{{-- @can('Marcas_Menu') --}}
             <li class="active">
                 <a href="{{url('marcas')}}" class="menu-toggle" data-active="true">
                     <div class="base-menu">
@@ -12,8 +12,8 @@
                     </div>
                 </a>
             </li>
-			@endcan
-			@can('Autos_Menu')
+			{{-- @endcan --}}
+			{{-- @can('Autos_Menu') --}}
 			<li class="">
                 <a href="{{ url('autos') }}" class="menu-toggle" data-active="false">
                     <div class="base-menu">
@@ -24,8 +24,8 @@
                     </div>
                 </a>
             </li>
-			@endcan
-			@can('Alquiler_Menu')
+			{{-- @endcan --}}
+			{{-- @can('Alquiler_Menu') --}}
 			<li class="">
                 <a href="{{ url('alquilerListado') }}" class="menu-toggle" data-active="false">
                     <div class="base-menu">
@@ -36,8 +36,8 @@
                     </div>
                 </a>
             </li>
-			@endcan
-			@can('Alquiler_Menu')
+			{{-- @endcan --}}
+			{{-- @can('Alquiler_Menu') --}}
 			<li class="">
                 <a href="{{ url('alquiler') }}" class="menu-toggle" data-active="false">
                     <div class="base-menu">
@@ -48,8 +48,8 @@
                     </div>
                 </a>
             </li>
-			@endcan
-			@can('Proveedores_Menu')
+			{{-- @endcan
+			@can('Proveedores_Menu') --}}
 			<li class="">
                 <a href="{{ url('proveedores') }}" class="menu-toggle" data-active="false">
                     <div class="base-menu">
@@ -60,8 +60,8 @@
                    </div>
                </a>
            </li> 
-		   @endcan
-		   @can('Clientes_Menu')
+		   {{-- @endcan
+		   @can('Clientes_Menu') --}}
 			<li class="">
                 <a href="{{url('clientes')}}" class="menu-toggle" data-active="true">
                     <div class="base-menu">
@@ -72,8 +72,8 @@
                     </div>
                 </a>
             </li>
-			@endcan
-			@can('Seguros_Menu')
+			{{-- @endcan
+			@can('Seguros_Menu') --}}
 			<li class="">
                 <a href="{{ url('pantalla') }}" class="menu-toggle" data-active="false">
                     <div class="base-menu">
@@ -84,8 +84,8 @@
                     </div>
                 </a>
             </li>
-			@endcan
-			@can('Usuarios_Menu')
+			{{-- @endcan
+			@can('Usuarios_Menu') --}}
 			<li class="">
 				<a href="{{ url('usuarios') }}" class="menu-toggle" data-active="false">
 					<div class="base-menu">
@@ -96,8 +96,8 @@
 				   </div>
 			   </a>
 			</li>
-			@endcan
-			@can('PermisosRoles_Menu')
+			{{-- @endcan
+			@can('PermisosRoles_Menu') --}}
 			<li class="">
                 <a href="{{ url('pantallaRoles') }}" class="menu-toggle" data-active="false">
                     <div class="base-menu">
@@ -108,8 +108,8 @@
                     </div>
                 </a>
             </li>
-			@endcan
-			@can('Caja_Menu')
+			{{-- @endcan
+			@can('Caja_Menu') --}}
 			<li class="">
 				<a href="{{url('caja')}}" class="menu-toggle" data-active="false">
 					<div class="base-menu">
@@ -120,8 +120,8 @@
 					</div>
 				</a>
 			</li>
-			@endcan
-			@can('Reportes_Menu')
+			{{-- @endcan
+			@can('Reportes_Menu') --}}
 			<li class="">
 				<a href="{{url('reportes')}}" class="menu-toggle" data-active="false">
 					<div class="base-menu">
@@ -132,7 +132,7 @@
 					</div>
 				</a>
 			</li>
-			@endcan
+			{{-- @endcan --}}
 		</ul>
 	</nav>
 </div>

@@ -3,6 +3,8 @@
 <script src="{{ asset('bootstrap/js/bootstrap.min.js') }}"></script>
 <script src="{{ asset('plugins/perfect-scrollbar/perfect-scrollbar.min.js')}}"></script>
 <script src="{{ asset('assets/js/app.js') }}"></script>
+{{-- <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script> --}}
+@vite('resources/js/app2.js')
 
 
 <script>

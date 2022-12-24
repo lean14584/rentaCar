@@ -24,6 +24,7 @@ use App\Http\Livewire\SillasController;
 use App\Http\Livewire\RolesPermisosController;
 use App\Http\Livewire\AlquilerController;
 use App\Http\Livewire\AlquilerListadoController;
+use App\Http\Livewire\CalendarRentalController;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,3 +68,4 @@ Route::get('sillas', SillasController::class);
 Route::get('pantallaRoles', RolesPermisosController::class);
 Route::get('alquiler', AlquilerController::class);
 Route::get('alquilerListado', AlquilerListadoController::class);
+Route::get('calendar-rental', CalendarRentalController::class)->name('calendar');

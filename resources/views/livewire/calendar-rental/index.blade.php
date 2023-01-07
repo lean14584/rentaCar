@@ -53,7 +53,7 @@
                         @foreach ($rentals as $key => $rental)
                         <tr id={{$key}}>
                             <th class="text-center align-middle p-0">{{$key}}</th>
-
+                          
                             @foreach ($daysInMonth as $day)
                             <td id={{$key.'-'.$day->isoFormat('D')}}></td>
                             @endforeach
@@ -74,6 +74,7 @@
             (patentesAndID, patentesColors, patentesTotal, patentesSubTotal) => {
                 let element;
                 let patentesSubTot;
+                console.log(patentesAndID)
                 patentesAndID.forEach((patente) => {
                     element = document.getElementById(patente);
                     element.className += ` rotated font-weight-bold text-center align-middle p-0 ${patentesColors[patente]} text-white`;

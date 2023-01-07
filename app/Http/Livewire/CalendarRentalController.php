@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Models\Auto;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -130,7 +131,9 @@ class CalendarRentalController extends Component
         $data = DB::table('alquilers as al')
             ->join('autos as a', 'a.id', 'al.idAuto')
             ->join('clientes as c', 'c.id', 'al.idCliente')
-            ->select('a.patente as patente', 'c.nombre as nombre', 'al.fechaInicio', 'al.fechaFin', 'al.total')->get();
+            ->select('al.idAuto', 'a.patente as patente', 'c.nombre as nombre', 'al.fechaInicio', 'al.fechaFin', 'al.total')->get();
+
+        $autos = Auto::all('id', 'patente');
 
         $periodDaysPrevMonth = $data->map(function ($value) {
             $monthRentalStart = Carbon::createFromDate($value->fechaInicio);
@@ -159,7 +162,7 @@ class CalendarRentalController extends Component
         });
 
         $processedData = [];
-        foreach ($filteredData as $key => $data) {
+        foreach ($filteredData as $data) {
             $startDate = Carbon::parse($data->fechaInicio);
             $endDate = Carbon::parse($data->fechaFin);
             $periodDays = [];
@@ -192,6 +195,10 @@ class CalendarRentalController extends Component
             $processedData[] = collect($data)->merge(['periodDays' => $periodDays, 'periodDaysNextMonth' => $periodDaysNextMonth, 'periodDaysPrevMonth' => $this->periodDaysPrevMonth])->all();
         }
         $groupedPatente = collect($processedData)->groupBy('patente')->all();
+        foreach ($autos as $auto) {
+            $groupedPatente = Arr::add($groupedPatente, $auto->patente, []);
+        }
+
         return $groupedPatente;
     }
 }

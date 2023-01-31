@@ -44,41 +44,43 @@ class CalendarRentalController extends Component
         $this->daysInMonth = $this->getCurrentMonthDays($this->dt);
         $this->rentals = $this->rentals();
 
-        $patentes = [];
-        $patentesSubTotal = [];
-        $patentesColors = [];
-        $patentesTotal = [];
-        $patentesArray = [];
-        $test = [];
+        if ($this->rentals) {
+            $patentes = [];
+            $patentesSubTotal = [];
+            $patentesColors = [];
+            $patentesTotal = [];
+            $patentesArray = [];
+            $test = [];
 
-        foreach ($this->rentals as $key => $rental) {
-            foreach ($rental as $key2 => $values) {
-                $randColor = array_rand($this->colors, 1);
+            foreach ($this->rentals as $key => $rental) {
+                foreach ($rental as $key2 => $values) {
+                    $randColor = array_rand($this->colors, 1);
 
-                $startDate = Carbon::createFromDate($values['fechaInicio']);
-                if ($startDate->isoFormat('M') == $this->dt->isoFormat('M')) {
-                    $patentesArray = array('patentes' => $values['patente'], 'total' => $values['total']);
+                    $startDate = Carbon::createFromDate($values['fechaInicio']);
+                    if ($startDate->isoFormat('M') == $this->dt->isoFormat('M')) {
+                        $patentesArray = array('patentes' => $values['patente'], 'total' => $values['total']);
 
-                    if (array_key_exists($patentesArray['patentes'], $patentesTotal)) {
-                        $patentesTotal[$patentesArray['patentes']] += $patentesArray['total'];
-                    } else {
-                        $patentesTotal[$patentesArray['patentes']] = $patentesArray['total'];
+                        if (array_key_exists($patentesArray['patentes'], $patentesTotal)) {
+                            $patentesTotal[$patentesArray['patentes']] += $patentesArray['total'];
+                        } else {
+                            $patentesTotal[$patentesArray['patentes']] = $patentesArray['total'];
+                        }
                     }
-                }
 
-                foreach ($values['periodDays'] as $key => $value) {
-                    array_push($patentes, $values['patente'] . '-' . $value);
-                    $keys = $values['patente'] . '-' . $value;
-                    if ($key == 0  && $startDate->isoFormat('M') == $this->dt->isoFormat('M')) {
-                        $patentesSubTotal = Arr::add($patentesSubTotal, $keys, $values['total']);
+                    foreach ($values['periodDays'] as $key => $value) {
+                        array_push($patentes, $values['patente'] . '-' . $value);
+                        $keys = $values['patente'] . '-' . $value;
+                        if ($key == 0  && $startDate->isoFormat('M') == $this->dt->isoFormat('M')) {
+                            $patentesSubTotal = Arr::add($patentesSubTotal, $keys, $values['total']);
+                        }
+                        $patentesColors = Arr::add($patentesColors, $keys, $this->colors[$randColor]);
+                        array_push($test, $key . '-' . $value);
                     }
-                    $patentesColors = Arr::add($patentesColors, $keys, $this->colors[$randColor]);
-                    array_push($test, $key . '-' . $value);
                 }
             }
+            // call the "rentalAdded" function in the view script
+            $this->emit("rentalAdded", $patentes, $patentesColors, $patentesTotal, $patentesSubTotal);
         }
-        // call the "rentalAdded" function in the view script
-        $this->emit("rentalAdded", $patentes, $patentesColors, $patentesTotal, $patentesSubTotal);
     }
 
 

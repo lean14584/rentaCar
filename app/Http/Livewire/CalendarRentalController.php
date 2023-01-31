@@ -40,11 +40,11 @@ class CalendarRentalController extends Component
 
     public function updatedSelectedMonth()
     {
-        $this->dt = Carbon::createFromDate($this->selectedYear, $this->selectedMonth);
+        $this->dt = Carbon::createFromDate($this->selectedYear, $this->selectedMonth, 01);
         $this->daysInMonth = $this->getCurrentMonthDays($this->dt);
         $this->rentals = $this->rentals();
 
-        if ($this->rentals) {
+        if ($this->rentals != null) {
             $patentes = [];
             $patentesSubTotal = [];
             $patentesColors = [];
@@ -53,7 +53,7 @@ class CalendarRentalController extends Component
             $test = [];
 
             foreach ($this->rentals as $key => $rental) {
-                foreach ($rental as $key2 => $values) {
+                foreach ($rental as $values) {
                     $randColor = array_rand($this->colors, 1);
 
                     $startDate = Carbon::createFromDate($values['fechaInicio']);
@@ -156,7 +156,7 @@ class CalendarRentalController extends Component
             return $value;
         });
 
-        $filteredData = Arr::where($periodDaysPrevMonth->all(), function ($value, $key) {
+        $filteredData = Arr::where($periodDaysPrevMonth->all(), function ($value) {
             $monthRentalStart = Carbon::createFromDate($value->fechaInicio);
             $monthRentalEnd = Carbon::createFromDate($value->fechaFin);
 
@@ -196,6 +196,7 @@ class CalendarRentalController extends Component
             }
             $processedData[] = collect($data)->merge(['periodDays' => $periodDays, 'periodDaysNextMonth' => $periodDaysNextMonth, 'periodDaysPrevMonth' => $this->periodDaysPrevMonth])->all();
         }
+
         $groupedPatente = collect($processedData)->groupBy('patente')->all();
         foreach ($autos as $auto) {
             $groupedPatente = Arr::add($groupedPatente, $auto->patente, []);

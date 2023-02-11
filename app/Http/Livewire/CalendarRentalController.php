@@ -25,7 +25,6 @@ class CalendarRentalController extends Component
         "bg-info"
     ];
     public $total;
-    private $periodDaysPrevMonth = [];
 
     public function render()
     {
@@ -96,12 +95,13 @@ class CalendarRentalController extends Component
             $date = $dt;
             $startOfMonth = $date->copy()->startOfMonth()->subDay();
             $endOfMonth = $date->copy()->endOfMonth()->format('d');
-            $monthDays = [];
 
+            $monthDays = [];
             for ($i = 0; $i < $endOfMonth; $i++) {
                 $monthDays[] = $startOfMonth->addDay()->startOfDay()->copy();
             }
         }
+
         return $monthDays;
     }
 
@@ -130,47 +130,29 @@ class CalendarRentalController extends Component
         // "updated_at" => "2022-12-02 19:37:42"
         // "patente" => "OLD-365"
         // "nombre" => "Juan Roque"
-        $data = DB::table('alquilers as al')
+
+        $rentals = DB::table('alquilers as al')
             ->join('autos as a', 'a.id', 'al.idAuto')
             ->join('clientes as c', 'c.id', 'al.idCliente')
-            ->select('al.idAuto', 'a.patente as patente', 'c.nombre as nombre', 'al.fechaInicio', 'al.fechaFin', 'al.total')->get();
+            ->select('al.idAuto', 'a.patente as patente', 'c.nombre as nombre', 'al.fechaInicio', 'al.fechaFin', 'al.total')
+            ->whereYear('al.fechaInicio', '=', $this->dt->isoFormat('Y'))
+            ->whereMonth('al.fechaInicio', '=', $this->dt->isoFormat('M'))
+            ->orWhereMonth('al.fechaFin', '=', $this->dt->isoFormat('M'), 'and', 'al.fechaInicio', '=', $this->dt->isoFormat('M') - 1)
+            ->get();
 
-        $autos = Auto::all('id', 'patente');
+        $cars = Auto::all('id', 'patente');
 
-        $periodDaysPrevMonth = $data->map(function ($value) {
-            $monthRentalStart = Carbon::createFromDate($value->fechaInicio);
-            if ($monthRentalStart->isoFormat('Y') == $this->dt->isoFormat('Y')) {
-                $daysPrevMonth = array();
-                if ($monthRentalStart->isoFormat('M') == $this->dt->isoFormat('M') - 1) {
-                    $startDate = Carbon::parse($value->fechaInicio);
-                    $endDate = Carbon::parse($value->fechaFin);
-                    if ($startDate->endOfMonth() < $endDate) {
-                        $daysNextMonth = $startDate->endOfMonth()->diffInDays($endDate) + 1;
-                        for ($i = 0; $i < $daysNextMonth; $i++) {
-                            $daysPrevMonth[$i] = $i + 1;
-                        }
-                    }
-                }
-                $value->periodDaysPrevMonth = $daysPrevMonth;
-            }
-            return $value;
-        });
+        $rentals = $this->addDaysOfThePreviousMonth($rentals);
 
-        $filteredData = Arr::where($periodDaysPrevMonth->all(), function ($value) {
-            $monthRentalStart = Carbon::createFromDate($value->fechaInicio);
-            $monthRentalEnd = Carbon::createFromDate($value->fechaFin);
-
-            return $monthRentalStart->isoFormat('M/Y') == $this->dt->isoFormat('M/Y') || $monthRentalEnd->isoFormat('M/Y') == $this->dt->isoFormat('M/Y');
-        });
-
-        $processedData = [];
-        foreach ($filteredData as $data) {
-            $startDate = Carbon::parse($data->fechaInicio);
-            $endDate = Carbon::parse($data->fechaFin);
+        $processedRentals = [];
+        foreach ($rentals as $rental) {
+            $startDate = Carbon::parse($rental->fechaInicio);
+            $endDate = Carbon::parse($rental->fechaFin);
             $periodDays = [];
             $periodDaysNextMonth = [];
 
             $diffInDays = $endDate->diffInDays($startDate);
+
             if ($startDate->isoFormat('M') == $this->dt->isoFormat('M')) {
                 $periodDays[] = $startDate->copy()->isoFormat('D');
                 $startDateDay = $startDate->isoFormat('D');
@@ -194,14 +176,38 @@ class CalendarRentalController extends Component
                     $periodDaysNextMonth[] = $startDate->addDay()->copy()->startOfDay()->isoFormat('D');
                 }
             }
-            $processedData[] = collect($data)->merge(['periodDays' => $periodDays, 'periodDaysNextMonth' => $periodDaysNextMonth, 'periodDaysPrevMonth' => $this->periodDaysPrevMonth])->all();
+            $processedRentals[] = collect($rental)->merge(['periodDays' => $periodDays, 'periodDaysNextMonth' => $periodDaysNextMonth])->all();
         }
 
-        $groupedPatente = collect($processedData)->groupBy('patente')->all();
-        foreach ($autos as $auto) {
-            $groupedPatente = Arr::add($groupedPatente, $auto->patente, []);
+        $groupedPatente = collect($processedRentals)->groupBy('patente')->all();
+
+        // add cars without renting 
+        foreach ($cars as $car) {
+            $groupedPatente = Arr::add($groupedPatente, $car->patente, []);
         }
 
         return $groupedPatente;
+    }
+
+    private function addDaysOfThePreviousMonth($data)
+    {
+        return $data->map(function ($value) {
+            $monthRentalStart = Carbon::createFromDate($value->fechaInicio);
+            if ($monthRentalStart->isoFormat('Y') == $this->dt->isoFormat('Y')) {
+                $daysPrevMonth = array();
+                if ($monthRentalStart->isoFormat('M') == $this->dt->isoFormat('M') - 1) {
+                    $startDate = Carbon::parse($value->fechaInicio);
+                    $endDate = Carbon::parse($value->fechaFin);
+                    if ($startDate->endOfMonth() < $endDate) {
+                        $daysNextMonth = $startDate->endOfMonth()->diffInDays($endDate) + 1;
+                        for ($i = 0; $i < $daysNextMonth; $i++) {
+                            $daysPrevMonth[$i] = $i + 1;
+                        }
+                    }
+                }
+                $value->periodDaysPrevMonth = $daysPrevMonth;
+            }
+            return $value;
+        });
     }
 }

@@ -15,7 +15,7 @@ class CalendarRentalController extends Component
 
     protected $dt; //dataTime
     public $daysInMonth;
-    public $rentals;
+    public $rentals = null;
     public $colors = [
         "bg-primary",
         "bg-secondary",
@@ -44,16 +44,14 @@ class CalendarRentalController extends Component
         $this->rentals = $this->rentals();
 
         if ($this->rentals != null) {
-            $patentes = [];
             $patentesSubTotal = [];
             $patentesColors = [];
             $patentesTotal = [];
             $patentesArray = [];
-            $test = [];
 
             foreach ($this->rentals as $key => $rental) {
-                foreach ($rental as $values) {
-                    $randColor = array_rand($this->colors, 1);
+                foreach ($rental as $values) {                    
+                    $randomColor = array_rand($this->colors, 1);
 
                     $startDate = Carbon::createFromDate($values['fechaInicio']);
                     if ($startDate->isoFormat('M') == $this->dt->isoFormat('M')) {
@@ -66,22 +64,21 @@ class CalendarRentalController extends Component
                         }
                     }
 
-                    foreach ($values['periodDays'] as $key => $value) {
-                        array_push($patentes, $values['patente'] . '-' . $value);
+                    foreach ($values['periodDays'] as $key => $value) {                        
                         $keys = $values['patente'] . '-' . $value;
+                        
                         if ($key == 0  && $startDate->isoFormat('M') == $this->dt->isoFormat('M')) {
                             $patentesSubTotal = Arr::add($patentesSubTotal, $keys, $values['total']);
                         }
-                        $patentesColors = Arr::add($patentesColors, $keys, $this->colors[$randColor]);
-                        array_push($test, $key . '-' . $value);
+                        $patentesColors = Arr::add($patentesColors, $keys, $this->colors[$randomColor]);
                     }
                 }
             }
+
             // call the "rentalAdded" function in the view script
-            $this->emit("rentalAdded", $patentes, $patentesColors, $patentesTotal, $patentesSubTotal);
+            $this->emit("rentalAdded",$this->rentals, $patentesColors, $patentesTotal, $patentesSubTotal);
         }
     }
-
 
     public function updatedSelectedYear()
     {

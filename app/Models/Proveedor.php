@@ -10,6 +10,11 @@ class Proveedor extends Model
 {
     use HasFactory;
 
+    // Eloquent pluraliza "Proveedor" al inglés ("proveedors", solo agrega
+    // una s) — la tabla real está en español ("proveedores"). Mismo tipo de
+    // desajuste que tenía Alquiler/alquilers en la app vieja.
+    protected $table = 'proveedores';
+
     protected $fillable = ['nombre', 'inicio', 'cuit', 'brutos', 'localidad', 'telefono', 'direccion', 'correo', 'image'];
 
     protected function casts(): array

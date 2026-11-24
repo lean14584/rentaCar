@@ -33,8 +33,8 @@ class DatabaseSeeder extends Seeder
         $admin->syncPermissions(self::PANTALLAS);
 
         $user = User::query()->firstOrCreate(
-            ['email' => 'admin@rentacar.test'],
-            ['name' => 'Administrador', 'password' => 'admin1234']
+            ['username' => 'admin'],
+            ['name' => 'Administrador', 'email' => 'admin@rentacar.test', 'password' => 'admin1234']
         );
         $user->assignRole($admin);
     }

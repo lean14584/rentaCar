@@ -12,8 +12,8 @@ use Livewire\Component;
 #[Layout('layouts.guest')]
 class Login extends Component
 {
-    #[Validate('required|email')]
-    public string $email = '';
+    #[Validate('required|string')]
+    public string $username = '';
 
     #[Validate('required|string')]
     public string $password = '';
@@ -24,18 +24,18 @@ class Login extends Component
     {
         $this->validate();
 
-        $throttleKey = Str::lower($this->email).'|'.request()->ip();
+        $throttleKey = Str::lower($this->username).'|'.request()->ip();
 
         if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
             $seconds = RateLimiter::availableIn($throttleKey);
-            $this->addError('email', "Demasiados intentos. Probá de nuevo en {$seconds} segundos.");
+            $this->addError('username', "Demasiados intentos. Probá de nuevo en {$seconds} segundos.");
 
             return;
         }
 
-        if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+        if (! Auth::attempt(['username' => $this->username, 'password' => $this->password], $this->remember)) {
             RateLimiter::hit($throttleKey, 60);
-            $this->addError('email', 'Las credenciales no coinciden con ningún registro.');
+            $this->addError('username', 'Las credenciales no coinciden con ningún registro.');
 
             return;
         }

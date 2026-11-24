@@ -11,15 +11,15 @@
 
         <form wire:submit="submit" class="space-y-4">
             <div>
-                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Usuario</label>
                 <input
-                    type="email"
-                    wire:model="email"
+                    type="text"
+                    wire:model="username"
                     autofocus
                     autocomplete="username"
                     class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-100"
                 >
-                @error('email') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+                @error('username') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
 
             <div>

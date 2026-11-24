@@ -5,21 +5,37 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
     /**
-     * Seed the application's database.
+     * Un permiso por pantalla del menú (mismo nombre que la route), igual
+     * que la app vieja permitía armar roles a medida desde Roles/Permisos
+     * — acá se arranca con un set fijo de pantallas conocidas; nuevas
+     * pantallas futuras agregan su permiso acá.
      */
+    private const PANTALLAS = [
+        'dashboard', 'marcas', 'autos', 'alquiler', 'alquiler-listado', 'calendar-rental',
+        'clientes', 'proveedores', 'gastos', 'caja', 'reportes', 'usuarios', 'roles-permisos',
+    ];
+
     public function run(): void
     {
-        // User::factory(10)->create();
+        foreach (self::PANTALLAS as $pantalla) {
+            Permission::firstOrCreate(['name' => $pantalla]);
+        }
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        $admin = Role::firstOrCreate(['name' => 'Admin']);
+        $admin->syncPermissions(self::PANTALLAS);
+
+        $user = User::query()->firstOrCreate(
+            ['email' => 'admin@rentacar.test'],
+            ['name' => 'Administrador', 'password' => 'admin1234']
+        );
+        $user->assignRole($admin);
     }
 }

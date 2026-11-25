@@ -16,7 +16,7 @@ $maxWidthClass = [
     x-on:keydown.escape.window="$wire.{{ $wireModel }} = false"
     class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto px-4 pt-16 pb-8"
 >
-    <div x-show="$wire.{{ $wireModel }}" x-transition.opacity class="fixed inset-0 bg-gray-900/60" x-on:click="$wire.{{ $wireModel }} = false"></div>
+    <div x-show="$wire.{{ $wireModel }}" x-transition.opacity class="fixed inset-0 bg-gray-900/60"></div>
 
     <div
         x-show="$wire.{{ $wireModel }}"

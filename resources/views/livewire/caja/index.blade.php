@@ -116,12 +116,7 @@
 
             <div>
                 <label class="{{ $label }}">Auto</label>
-                <select wire:model="auto_id" class="{{ $inputClass }}">
-                    <option value="">Sin auto asignado</option>
-                    @foreach ($this->autos as $auto)
-                        <option value="{{ $auto->id }}">{{ $auto->patente }}</option>
-                    @endforeach
-                </select>
+                <x-autocomplete wireModel="auto_id" :value="$auto_id" :options="$this->autos->map(fn ($auto) => ['value' => $auto->id, 'label' => $auto->patente])" placeholder="Sin auto asignado (buscar por patente)" />
                 @error('auto_id') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
 

@@ -96,24 +96,24 @@
 
             <div>
                 <label class="{{ $label }}">Auto *</label>
-                <select wire:model.live="auto_id" class="{{ $inputClass }}">
-                    <option value="">Elegir...</option>
-                    @foreach ($this->autosDisponibles as $auto)
-                        <option value="{{ $auto->id }}">{{ $auto->patente }} · {{ $auto->marca->nombre }} ({{ $auto->modelo }})</option>
-                    @endforeach
-                </select>
+                <x-autocomplete
+                    wireModel="auto_id"
+                    :value="$auto_id"
+                    :options="$this->autosDisponibles->map(fn ($auto) => ['value' => $auto->id, 'label' => $auto->patente.' · '.$auto->marca->nombre.' ('.$auto->modelo.')'])"
+                    placeholder="Buscar por patente o marca..."
+                />
                 @error('auto_id') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
                 @error('fecha_inicio') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
 
             <div>
                 <label class="{{ $label }}">Cliente *</label>
-                <select wire:model="cliente_id" class="{{ $inputClass }}">
-                    <option value="">Elegir...</option>
-                    @foreach ($this->clientes as $cliente)
-                        <option value="{{ $cliente->id }}">{{ $cliente->nombre }}</option>
-                    @endforeach
-                </select>
+                <x-autocomplete
+                    wireModel="cliente_id"
+                    :value="$cliente_id"
+                    :options="$this->clientes->map(fn ($cliente) => ['value' => $cliente->id, 'label' => $cliente->nombre])"
+                    placeholder="Buscar por nombre..."
+                />
                 @error('cliente_id') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
 

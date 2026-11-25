@@ -98,12 +98,7 @@
 
             <div>
                 <label class="{{ $label }}">Auto *</label>
-                <select wire:model="auto_id" class="{{ $inputClass }}">
-                    <option value="">Elegir...</option>
-                    @foreach ($this->autos as $auto)
-                        <option value="{{ $auto->id }}">{{ $auto->patente }}</option>
-                    @endforeach
-                </select>
+                <x-autocomplete wireModel="auto_id" :value="$auto_id" :options="$this->autos->map(fn ($auto) => ['value' => $auto->id, 'label' => $auto->patente])" placeholder="Buscar por patente..." />
                 @error('auto_id') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
 
@@ -120,12 +115,7 @@
 
             <div>
                 <label class="{{ $label }}">Proveedor *</label>
-                <select wire:model="proveedor_id" class="{{ $inputClass }}">
-                    <option value="">Elegir...</option>
-                    @foreach ($this->proveedores as $proveedor)
-                        <option value="{{ $proveedor->id }}">{{ $proveedor->nombre }}</option>
-                    @endforeach
-                </select>
+                <x-autocomplete wireModel="proveedor_id" :value="$proveedor_id" :options="$this->proveedores->map(fn ($proveedor) => ['value' => $proveedor->id, 'label' => $proveedor->nombre])" placeholder="Buscar por nombre..." />
                 @error('proveedor_id') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
             </div>
 

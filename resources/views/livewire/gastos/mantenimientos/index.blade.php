@@ -20,7 +20,8 @@
         >
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    {{-- Desktop: tabla --}}
+    <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:block dark:border-gray-800 dark:bg-gray-900">
         <div class="overflow-x-auto">
             <table class="w-full text-center text-sm">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
@@ -85,6 +86,54 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    {{-- Mobile: cards --}}
+    <div class="space-y-3 sm:hidden">
+        @forelse ($mantenimientos as $mantenimiento)
+            <div wire:key="mantenimiento-card-{{ $mantenimiento->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                        <p class="truncate font-semibold text-gray-900 dark:text-gray-100">{{ $mantenimiento->auto->patente }}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ $mantenimiento->nombre }} · {{ $mantenimiento->proveedor->nombre }}</p>
+                    </div>
+                    <span @class([
+                        'inline-flex shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                        'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' => $mantenimiento->estado === 'En Curso',
+                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' => $mantenimiento->estado === 'Finalizada',
+                    ])>{{ $mantenimiento->estado }}</span>
+                </div>
+                <div class="mt-2 flex items-center justify-between text-sm">
+                    <span class="text-gray-500 dark:text-gray-400">{{ $mantenimiento->fecha_inicio->format('d/m/Y') }} — {{ $mantenimiento->fecha_fin?->format('d/m/Y') ?? '—' }}</span>
+                    <span class="font-medium text-gray-900 dark:text-gray-100">$ {{ number_format((float) $mantenimiento->valor, 2, ',', '.') }}</span>
+                </div>
+                <div class="mt-3 flex justify-end gap-1 border-t border-gray-100 pt-3 dark:border-gray-800">
+                    @if ($mantenimiento->estado === 'En Curso')
+                        <button
+                            type="button" wire:click="finalizar({{ $mantenimiento->id }})"
+                            wire:confirm="¿Marcar este gasto como finalizado? El auto vuelve a quedar Disponible."
+                            aria-label="Finalizar gasto"
+                            class="inline-flex rounded-md p-1.5 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 dark:text-gray-400 dark:hover:bg-emerald-500/10"
+                        >
+                            <x-heroicon-o-check-circle class="h-4 w-4" />
+                        </button>
+                        <button type="button" wire:click="edit({{ $mantenimiento->id }})" aria-label="Editar gasto" class="inline-flex rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800">
+                            <x-heroicon-o-pencil class="h-4 w-4" />
+                        </button>
+                    @endif
+                    <button
+                        type="button" wire:click="delete({{ $mantenimiento->id }})"
+                        wire:confirm="¿Borrar este gasto? Esta acción no se puede deshacer."
+                        aria-label="Eliminar gasto"
+                        class="inline-flex rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-500/10"
+                    >
+                        <x-heroicon-o-trash class="h-4 w-4" />
+                    </button>
+                </div>
+            </div>
+        @empty
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">No hay gastos cargados.</div>
+        @endforelse
     </div>
 
     <div class="mt-4">

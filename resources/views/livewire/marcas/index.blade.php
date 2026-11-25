@@ -18,7 +18,8 @@
         >
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    {{-- Desktop: tabla --}}
+    <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:block dark:border-gray-800 dark:bg-gray-900">
         <div class="overflow-x-auto">
             <table class="w-full text-center text-sm">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
@@ -69,6 +70,44 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    {{-- Mobile: cards --}}
+    <div class="space-y-3 sm:hidden">
+        @forelse ($marcas as $marca)
+            <div wire:key="marca-card-{{ $marca->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 shrink-0">
+                        @if ($marca->image)
+                            <img src="{{ asset('storage/'.$marca->image) }}" class="h-10 w-10 rounded-md object-contain">
+                        @else
+                            <div class="flex h-10 w-10 items-center justify-center rounded-md bg-gray-100 text-gray-300 dark:bg-gray-800">
+                                <x-heroicon-o-photo class="h-5 w-5" />
+                            </div>
+                        @endif
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <p class="truncate font-medium text-gray-900 dark:text-gray-100">{{ $marca->nombre }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ $marca->autos_count }} {{ Str::plural('auto', $marca->autos_count) }}</p>
+                    </div>
+                    <div class="flex shrink-0 items-center gap-1">
+                        <button type="button" wire:click="edit({{ $marca->id }})" aria-label="Editar marca" class="inline-flex rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800">
+                            <x-heroicon-o-pencil class="h-4 w-4" />
+                        </button>
+                        <button
+                            type="button" wire:click="delete({{ $marca->id }})"
+                            wire:confirm="¿Borrar la marca {{ $marca->nombre }}?"
+                            aria-label="Eliminar marca"
+                            class="inline-flex rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-500/10"
+                        >
+                            <x-heroicon-o-trash class="h-4 w-4" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @empty
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">No hay marcas cargadas.</div>
+        @endforelse
     </div>
 
     <div class="mt-4">

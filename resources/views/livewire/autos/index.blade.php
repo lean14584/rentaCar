@@ -18,7 +18,8 @@
         >
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    {{-- Desktop: tabla --}}
+    <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:block dark:border-gray-800 dark:bg-gray-900">
         <div class="overflow-x-auto">
             <table class="w-full text-center text-sm">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
@@ -83,6 +84,54 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    {{-- Mobile: cards --}}
+    <div class="space-y-3 sm:hidden">
+        @forelse ($autos as $auto)
+            <div wire:key="auto-card-{{ $auto->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                <div class="flex items-start gap-3">
+                    <div class="h-12 w-12 shrink-0">
+                        @if ($auto->image)
+                            <img src="{{ asset('storage/'.$auto->image) }}" class="h-12 w-12 rounded-md object-cover">
+                        @else
+                            <div class="flex h-12 w-12 items-center justify-center rounded-md bg-gray-100 text-gray-300 dark:bg-gray-800">
+                                <x-heroicon-o-photo class="h-5 w-5" />
+                            </div>
+                        @endif
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center justify-between gap-2">
+                            <p class="truncate font-semibold text-gray-900 dark:text-gray-100">{{ $auto->patente }}</p>
+                            <span @class([
+                                'inline-flex shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                                'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' => $auto->estado === 'Disponible',
+                                'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' => $auto->estado === 'Alquilado',
+                                'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400' => $auto->estado === 'En Mantenimiento',
+                                'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' => $auto->estado === 'No Disponible',
+                            ])>{{ $auto->estado }}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ $auto->marca->nombre }} · {{ $auto->modelo }} · {{ $auto->titular }}</p>
+                        <p class="mt-1 text-sm font-medium text-gray-900 dark:text-gray-100">$ {{ number_format((float) $auto->precio_alquiler, 2, ',', '.') }} / día</p>
+                    </div>
+                </div>
+                <div class="mt-3 flex justify-end gap-1 border-t border-gray-100 pt-3 dark:border-gray-800">
+                    <button type="button" wire:click="edit({{ $auto->id }})" aria-label="Editar auto" class="inline-flex rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800">
+                        <x-heroicon-o-pencil class="h-4 w-4" />
+                    </button>
+                    <button
+                        type="button" wire:click="delete({{ $auto->id }})"
+                        wire:confirm="¿Borrar el auto {{ $auto->patente }}?"
+                        aria-label="Eliminar auto"
+                        class="inline-flex rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-500/10"
+                    >
+                        <x-heroicon-o-trash class="h-4 w-4" />
+                    </button>
+                </div>
+            </div>
+        @empty
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">No hay autos cargados.</div>
+        @endforelse
     </div>
 
     <div class="mt-4">

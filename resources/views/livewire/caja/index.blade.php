@@ -63,7 +63,8 @@
         >
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    {{-- Desktop: tabla --}}
+    <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:block dark:border-gray-800 dark:bg-gray-900">
         <div class="overflow-x-auto">
             <table class="w-full text-center text-sm">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
@@ -124,13 +125,59 @@
         </div>
     </div>
 
+    {{-- Mobile: cards --}}
+    <div class="space-y-3 sm:hidden">
+        @forelse ($movimientos as $movimiento)
+            <div wire:key="caja-card-{{ $movimiento->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                        <span @class([
+                            'inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                            'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' => $movimiento->tipo === 'Ingreso',
+                            'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400' => $movimiento->tipo === 'Egreso',
+                        ])>{{ $movimiento->tipo }}</span>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">{{ $movimiento->descripcion }}</p>
+                    </div>
+                    <p class="shrink-0 font-semibold {{ $movimiento->tipo === 'Ingreso' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                        {{ $movimiento->tipo === 'Ingreso' ? '+' : '-' }} $ {{ number_format((float) $movimiento->monto, 2, ',', '.') }}
+                    </p>
+                </div>
+                <div class="mt-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                    <span>{{ $movimiento->created_at->format('d/m/Y H:i') }}</span>
+                    <span>{{ $movimiento->auto?->patente ?? '—' }} · {{ $movimiento->metodo_pago }}</span>
+                </div>
+                @if ($movimiento->esManual())
+                    <div class="mt-3 flex justify-end gap-1 border-t border-gray-100 pt-3 dark:border-gray-800">
+                        <button type="button" wire:click="edit({{ $movimiento->id }})" aria-label="Editar movimiento" class="inline-flex rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800">
+                            <x-heroicon-o-pencil class="h-4 w-4" />
+                        </button>
+                        <button
+                            type="button" wire:click="delete({{ $movimiento->id }})"
+                            wire:confirm="¿Borrar este movimiento?"
+                            aria-label="Eliminar movimiento"
+                            class="inline-flex rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-500/10"
+                        >
+                            <x-heroicon-o-trash class="h-4 w-4" />
+                        </button>
+                    </div>
+                @else
+                    <p class="mt-3 border-t border-gray-100 pt-3 text-right text-xs text-gray-400 dark:border-gray-800" title="Generado automáticamente, se edita desde su origen">Automático</p>
+                @endif
+            </div>
+        @empty
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">No hay movimientos cargados.</div>
+        @endforelse
+    </div>
+
     <div class="mt-4">
         {{ $movimientos->links() }}
     </div>
 
     <div class="mt-8">
         <h2 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Historial de cajas</h2>
-        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+
+        {{-- Desktop: tabla --}}
+        <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:block dark:border-gray-800 dark:bg-gray-900">
             <div class="overflow-x-auto">
                 <table class="w-full text-center text-sm">
                     <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
@@ -173,6 +220,40 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        {{-- Mobile: cards --}}
+        <div class="space-y-3 sm:hidden">
+            @forelse ($this->sesionesRecientes as $sesion)
+                <div wire:key="sesion-card-{{ $sesion->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <div class="flex items-start justify-between gap-2">
+                        <p class="font-semibold text-gray-900 dark:text-gray-100">{{ $sesion->fecha->format('d/m/Y') }}</p>
+                        <span @class([
+                            'inline-flex shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                            'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' => $sesion->estado === 'Abierta',
+                            'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' => $sesion->estado === 'Cerrada',
+                        ])>{{ $sesion->estado }}</span>
+                    </div>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Apertura {{ $sesion->hora_apertura->format('H:i') }} · {{ $sesion->usuarioApertura->name }}
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Cierre {{ $sesion->hora_cierre ? $sesion->hora_cierre->format('H:i').' · '.$sesion->usuarioCierre?->name : '—' }}
+                    </p>
+                    <div class="mt-2 flex items-center justify-between text-sm">
+                        <span class="text-gray-500 dark:text-gray-400">
+                            $ {{ number_format((float) $sesion->monto_apertura, 2, ',', '.') }}
+                            →
+                            {{ $sesion->monto_cierre !== null ? '$ '.number_format((float) $sesion->monto_cierre, 2, ',', '.') : '—' }}
+                        </span>
+                        <span class="font-semibold {{ (float) $sesion->diferencia === 0.0 ? 'text-gray-400' : ((float) $sesion->diferencia > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') }}">
+                            {{ $sesion->diferencia !== null ? '$ '.number_format((float) $sesion->diferencia, 2, ',', '.') : '—' }}
+                        </span>
+                    </div>
+                </div>
+            @empty
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">Todavía no se abrió ninguna caja.</div>
+            @endforelse
         </div>
     </div>
 

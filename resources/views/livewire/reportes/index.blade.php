@@ -35,7 +35,8 @@
         @endforeach
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    {{-- Desktop: tabla --}}
+    <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:block dark:border-gray-800 dark:bg-gray-900">
         <div class="overflow-x-auto">
 
             @if ($tab === 'devolver')
@@ -216,5 +217,126 @@
             @endif
 
         </div>
+    </div>
+
+    {{-- Mobile: cards --}}
+    <div class="space-y-3 sm:hidden">
+        @if ($tab === 'devolver')
+            @forelse ($this->autosADevolver as $alquiler)
+                @php $dias = now()->startOfDay()->diffInDays($alquiler->fecha_fin->copy()->startOfDay(), false); @endphp
+                <div wire:key="devolver-card-{{ $alquiler->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <p class="truncate font-semibold text-gray-900 dark:text-gray-100">{{ $alquiler->auto->patente }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $alquiler->cliente->nombre }}</p>
+                        </div>
+                        @if ($dias < 0)
+                            <span class="inline-flex shrink-0 rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">Vencido hace {{ abs($dias) }}d</span>
+                        @elseif ($dias === 0)
+                            <span class="inline-flex shrink-0 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">Hoy</span>
+                        @else
+                            <span class="inline-flex shrink-0 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-400">En {{ $dias }}d</span>
+                        @endif
+                    </div>
+                    <div class="mt-2 flex items-center justify-between text-sm">
+                        <span class="text-gray-500 dark:text-gray-400">Devuelve {{ $alquiler->fecha_fin->format('d/m/Y') }}</span>
+                        <span class="{{ (float) $alquiler->saldo > 0 ? 'font-semibold text-amber-600 dark:text-amber-400' : 'text-gray-400' }}">Saldo: $ {{ number_format((float) $alquiler->saldo, 2, ',', '.') }}</span>
+                    </div>
+                </div>
+            @empty
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">No hay alquileres activos con devolución en el período seleccionado.</div>
+            @endforelse
+        @endif
+
+        @if ($tab === 'seguros')
+            @forelse ($this->segurosPorVencer as $seguro)
+                <div wire:key="seguro-card-{{ $seguro->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <p class="truncate font-semibold text-gray-900 dark:text-gray-100">{{ $seguro->auto->patente }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $seguro->nombre }}</p>
+                        </div>
+                        @if ($seguro->vigencia_hasta->isPast())
+                            <span class="inline-flex shrink-0 rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">Vencido</span>
+                        @else
+                            <span class="inline-flex shrink-0 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">Por vencer</span>
+                        @endif
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Vigencia hasta {{ $seguro->vigencia_hasta->format('d/m/Y') }}</p>
+                </div>
+            @empty
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">No hay seguros con vencimiento en el período seleccionado.</div>
+            @endforelse
+        @endif
+
+        @if ($tab === 'polizas')
+            @forelse ($this->polizasPorVencer as $poliza)
+                <div wire:key="poliza-card-{{ $poliza->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <p class="truncate font-semibold text-gray-900 dark:text-gray-100">{{ $poliza->auto->patente }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $poliza->empresa }}</p>
+                        </div>
+                        @if ($poliza->vigencia_hasta->isPast())
+                            <span class="inline-flex shrink-0 rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">Vencida</span>
+                        @else
+                            <span class="inline-flex shrink-0 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">Por vencer</span>
+                        @endif
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Vigencia hasta {{ $poliza->vigencia_hasta->format('d/m/Y') }}</p>
+                </div>
+            @empty
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">No hay pólizas con vencimiento en el período seleccionado.</div>
+            @endforelse
+        @endif
+
+        @if ($tab === 'ganancias')
+            @forelse ($this->gananciasPorAuto as $auto)
+                <div wire:key="ganancia-card-{{ $auto->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <p class="font-semibold text-gray-900 dark:text-gray-100">{{ $auto->patente }}</p>
+                    <div class="mt-2 flex items-center justify-between text-sm">
+                        <span class="text-emerald-600 dark:text-emerald-400">Ingresos: $ {{ number_format($auto->ingresos, 2, ',', '.') }}</span>
+                        <span class="text-rose-600 dark:text-rose-400">Egresos: $ {{ number_format($auto->egresos, 2, ',', '.') }}</span>
+                    </div>
+                    <p class="mt-1 text-right font-semibold {{ $auto->ganancia >= 0 ? 'text-gray-900 dark:text-gray-100' : 'text-rose-600 dark:text-rose-400' }}">
+                        Ganancia: $ {{ number_format($auto->ganancia, 2, ',', '.') }}
+                    </p>
+                </div>
+            @empty
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">No hay autos cargados.</div>
+            @endforelse
+        @endif
+
+        @if ($tab === 'alquilados')
+            @forelse ($this->autosMasAlquilados as $auto)
+                <div wire:key="alquilado-card-{{ $auto->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <p class="font-semibold text-gray-900 dark:text-gray-100">{{ $auto->patente }}</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ $auto->marca->nombre }}</p>
+                    <div class="mt-2 flex items-center justify-between text-sm">
+                        <span class="text-gray-500 dark:text-gray-400">{{ $auto->alquileres_count }} {{ Str::plural('alquiler', $auto->alquileres_count) }}</span>
+                        <span class="font-medium text-gray-900 dark:text-gray-100">$ {{ number_format((float) $auto->total_facturado, 2, ',', '.') }}</span>
+                    </div>
+                </div>
+            @empty
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">Todavía no hay alquileres cargados.</div>
+            @endforelse
+        @endif
+
+        @if ($tab === 'mantenimientos')
+            @forelse ($this->mantenimientosPorFinalizar as $mantenimiento)
+                <div wire:key="mant-card-{{ $mantenimiento->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <p class="truncate font-semibold text-gray-900 dark:text-gray-100">{{ $mantenimiento->auto->patente }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $mantenimiento->nombre }} · {{ $mantenimiento->proveedor->nombre }}</p>
+                        </div>
+                        <p class="shrink-0 font-medium text-gray-900 dark:text-gray-100">$ {{ number_format((float) $mantenimiento->valor, 2, ',', '.') }}</p>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ $mantenimiento->fecha_inicio->format('d/m/Y') }} — {{ $mantenimiento->fecha_fin?->format('d/m/Y') ?? '—' }}</p>
+                </div>
+            @empty
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">No hay mantenimientos en curso iniciados en el período seleccionado.</div>
+            @endforelse
+        @endif
     </div>
 </div>

@@ -29,7 +29,8 @@
         </div>
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    {{-- Desktop: tabla --}}
+    <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:block dark:border-gray-800 dark:bg-gray-900">
         <div class="overflow-x-auto">
             <table class="w-full text-center text-sm">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
@@ -81,6 +82,47 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    {{-- Mobile: cards --}}
+    <div class="space-y-3 sm:hidden">
+        @forelse ($movimientos as $movimiento)
+            <div wire:key="ctacte-card-{{ $movimiento->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                        <span @class([
+                            'inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                            'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400' => $movimiento->tipo === 'Cargo',
+                            'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' => $movimiento->tipo === 'Pago',
+                        ])>{{ $movimiento->tipo }}</span>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-300">{{ $movimiento->descripcion }}</p>
+                    </div>
+                    <p class="shrink-0 font-semibold {{ $movimiento->tipo === 'Cargo' ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400' }}">
+                        {{ $movimiento->tipo === 'Cargo' ? '+' : '-' }} $ {{ number_format((float) $movimiento->importe, 2, ',', '.') }}
+                    </p>
+                </div>
+                <div class="mt-2 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                    <span>{{ $movimiento->created_at->format('d/m/Y H:i') }}</span>
+                    <span>{{ $movimiento->metodo_pago ?? '—' }}</span>
+                </div>
+                @if ($movimiento->esManual())
+                    <div class="mt-3 flex justify-end border-t border-gray-100 pt-3 dark:border-gray-800">
+                        <button
+                            type="button" wire:click="delete({{ $movimiento->id }})"
+                            wire:confirm="¿Borrar este pago?"
+                            aria-label="Eliminar pago"
+                            class="inline-flex rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-500/10"
+                        >
+                            <x-heroicon-o-trash class="h-4 w-4" />
+                        </button>
+                    </div>
+                @else
+                    <p class="mt-3 border-t border-gray-100 pt-3 text-right text-xs text-gray-400 dark:border-gray-800" title="Generado automáticamente desde el gasto de origen">Automático</p>
+                @endif
+            </div>
+        @empty
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">No hay movimientos cargados.</div>
+        @endforelse
     </div>
 
     <div class="mt-4">

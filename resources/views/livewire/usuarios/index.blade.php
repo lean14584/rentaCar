@@ -18,7 +18,8 @@
         >
     </div>
 
-    <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    {{-- Desktop: tabla --}}
+    <div class="hidden overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:block dark:border-gray-800 dark:bg-gray-900">
         <div class="overflow-x-auto">
             <table class="w-full text-center text-sm">
                 <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
@@ -83,6 +84,54 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    {{-- Mobile: cards --}}
+    <div class="space-y-3 sm:hidden">
+        @forelse ($usuarios as $usuario)
+            <div wire:key="usuario-card-{{ $usuario->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 shrink-0">
+                        @if ($usuario->image)
+                            <img src="{{ asset('storage/'.$usuario->image) }}" class="h-10 w-10 rounded-full object-cover">
+                        @else
+                            <div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-400 dark:bg-gray-800">
+                                {{ Str::upper(Str::substr($usuario->name, 0, 1)) }}
+                            </div>
+                        @endif
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center justify-between gap-2">
+                            <p class="truncate font-medium text-gray-900 dark:text-gray-100">{{ $usuario->name }}</p>
+                            <span @class([
+                                'inline-flex shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                                'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' => $usuario->activo,
+                                'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' => ! $usuario->activo,
+                            ])>{{ $usuario->activo ? 'Activo' : 'Inactivo' }}</span>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">{{ $usuario->username }} · {{ $usuario->getRoleNames()->first() ?? '—' }}</p>
+                        <p class="truncate text-xs text-gray-400 dark:text-gray-500">{{ $usuario->email }}</p>
+                    </div>
+                </div>
+                <div class="mt-3 flex justify-end gap-1 border-t border-gray-100 pt-3 dark:border-gray-800">
+                    <button type="button" wire:click="edit({{ $usuario->id }})" aria-label="Editar usuario" class="inline-flex rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800">
+                        <x-heroicon-o-pencil class="h-4 w-4" />
+                    </button>
+                    @if ($usuario->id !== auth()->id())
+                        <button
+                            type="button" wire:click="delete({{ $usuario->id }})"
+                            wire:confirm="¿Borrar a {{ $usuario->name }}?"
+                            aria-label="Eliminar usuario"
+                            class="inline-flex rounded-md p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-500/10"
+                        >
+                            <x-heroicon-o-trash class="h-4 w-4" />
+                        </button>
+                    @endif
+                </div>
+            </div>
+        @empty
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">No hay usuarios cargados.</div>
+        @endforelse
     </div>
 
     <div class="mt-4">

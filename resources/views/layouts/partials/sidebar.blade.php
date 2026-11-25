@@ -41,18 +41,33 @@
     $currentPattern = fn (string $pattern) => request()->routeIs($pattern);
 @endphp
 
-<aside class="flex w-64 shrink-0 flex-col bg-gray-950 text-gray-300">
-    <div class="flex items-center gap-2 px-5 py-5">
-        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-white">
-            <x-heroicon-o-truck class="h-4.5 w-4.5" />
-        </span>
-        <span class="text-base font-bold text-white">RentaCar</span>
+{{-- Fondo oscuro: solo mobile, mientras el menú está abierto --}}
+<div
+    x-show="sidebarOpen" x-cloak x-transition.opacity
+    @click="sidebarOpen = false"
+    class="fixed inset-0 z-40 bg-gray-900/60 lg:hidden"
+></div>
+
+<aside
+    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+    class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col bg-gray-950 text-gray-300 transition-transform duration-200 ease-in-out lg:static lg:z-auto lg:translate-x-0"
+>
+    <div class="flex items-center justify-between gap-2 px-5 py-5">
+        <div class="flex items-center gap-2">
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-white">
+                <x-heroicon-o-truck class="h-4.5 w-4.5" />
+            </span>
+            <span class="text-base font-bold text-white">RentaCar</span>
+        </div>
+        <button type="button" @click="sidebarOpen = false" aria-label="Cerrar menú" class="rounded-md p-1 text-gray-400 hover:bg-gray-800 hover:text-white lg:hidden">
+            <x-heroicon-o-x-mark class="h-5 w-5" />
+        </button>
     </div>
 
     <nav class="flex-1 space-y-5 overflow-y-auto px-3 pb-4">
         @foreach ($standaloneItems as $item)
             <a
-                href="{{ $item['href'] }}" wire:navigate
+                href="{{ $item['href'] }}" wire:navigate @click="sidebarOpen = false"
                 class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors {{ $currentPattern($item['pattern']) ? 'bg-amber-500/15 text-amber-400' : 'text-gray-300 hover:bg-gray-800/60 hover:text-white' }}"
             >
                 <x-dynamic-component :component="'heroicon-o-'.$item['icon']" class="h-4.5 w-4.5 shrink-0" />
@@ -66,7 +81,7 @@
                 <div class="space-y-0.5">
                     @foreach ($items as $item)
                         <a
-                            href="{{ $item['href'] }}" wire:navigate
+                            href="{{ $item['href'] }}" wire:navigate @click="sidebarOpen = false"
                             class="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors {{ $currentPattern($item['pattern']) ? 'bg-amber-500/15 text-amber-400' : 'text-gray-300 hover:bg-gray-800/60 hover:text-white' }}"
                         >
                             <x-dynamic-component :component="'heroicon-o-'.$item['icon']" class="h-4.5 w-4.5 shrink-0" />

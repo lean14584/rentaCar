@@ -33,7 +33,7 @@ class Login extends Component
             return;
         }
 
-        if (! Auth::attempt(['username' => $this->username, 'password' => $this->password], $this->remember)) {
+        if (! Auth::attempt(['username' => $this->username, 'password' => $this->password, 'activo' => true], $this->remember)) {
             RateLimiter::hit($throttleKey, 60);
             $this->addError('username', 'Las credenciales no coinciden con ningún registro.');
 

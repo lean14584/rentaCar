@@ -14,6 +14,8 @@ use App\Livewire\Gastos\Rto\Index as RtoIndex;
 use App\Livewire\Gastos\Seguros\Index as SegurosIndex;
 use App\Livewire\Marcas\Index as MarcaIndex;
 use App\Livewire\Proveedores\Index as ProveedorIndex;
+use App\Livewire\Roles\Index as RolesIndex;
+use App\Livewire\Usuarios\Index as UsuariosIndex;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/login', Login::class)->middleware('guest')->name('login');
@@ -37,4 +39,7 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware('can:caja')->get('caja', CajaIndex::class)->name('caja.index');
+
+    Route::middleware('can:usuarios')->get('usuarios', UsuariosIndex::class)->name('usuarios.index');
+    Route::middleware('can:roles-permisos')->get('roles-permisos', RolesIndex::class)->name('roles-permisos.index');
 });

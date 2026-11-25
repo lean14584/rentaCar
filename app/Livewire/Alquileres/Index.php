@@ -5,6 +5,7 @@ namespace App\Livewire\Alquileres;
 use App\Models\Alquiler;
 use App\Models\Auto;
 use App\Models\Cadena;
+use App\Models\Caja;
 use App\Models\Cliente;
 use App\Models\Matafuego;
 use App\Models\Silla;
@@ -241,6 +242,25 @@ class Index extends Component
             // estado del auto había que cambiarlo a mano desde Autos.
             if ($alquiler->estado === 'Activo') {
                 $auto->update(['estado' => 'Alquilado']);
+            }
+
+            // La entrega queda como un ingreso en Caja, vinculado a este
+            // alquiler — si se edita el monto o se borra el alquiler, el
+            // movimiento se actualiza/borra con él en vez de quedar suelto.
+            if ((float) $this->entrega > 0) {
+                Caja::updateOrCreate(
+                    ['alquiler_id' => $alquiler->id],
+                    [
+                        'usuario_id' => Auth::id(),
+                        'auto_id' => $alquiler->auto_id,
+                        'tipo' => 'Ingreso',
+                        'monto' => $this->entrega,
+                        'metodo_pago' => $this->metodo_pago,
+                        'descripcion' => 'Entrega por alquiler a '.$alquiler->cliente->nombre,
+                    ]
+                );
+            } else {
+                Caja::where('alquiler_id', $alquiler->id)->delete();
             }
         });
 

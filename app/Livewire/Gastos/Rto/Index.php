@@ -3,7 +3,10 @@
 namespace App\Livewire\Gastos\Rto;
 
 use App\Models\Auto;
+use App\Models\Caja;
 use App\Models\Rto;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -78,16 +81,30 @@ class Index extends Component
     {
         $this->validate();
 
-        $rto = $this->editingId ? Rto::findOrFail($this->editingId) : new Rto;
-        $rto->fill([
-            'empresa' => $this->empresa,
-            'auto_id' => $this->auto_id,
-            'fecha_inicio' => $this->fecha_inicio,
-            'fecha_fin' => $this->fecha_fin,
-            'metodo_pago' => $this->metodo_pago,
-            'valor' => $this->valor,
-        ]);
-        $rto->save();
+        DB::transaction(function () {
+            $rto = $this->editingId ? Rto::findOrFail($this->editingId) : new Rto;
+            $rto->fill([
+                'empresa' => $this->empresa,
+                'auto_id' => $this->auto_id,
+                'fecha_inicio' => $this->fecha_inicio,
+                'fecha_fin' => $this->fecha_fin,
+                'metodo_pago' => $this->metodo_pago,
+                'valor' => $this->valor,
+            ]);
+            $rto->save();
+
+            Caja::updateOrCreate(
+                ['rto_id' => $rto->id],
+                [
+                    'usuario_id' => Auth::id(),
+                    'auto_id' => $rto->auto_id,
+                    'tipo' => 'Egreso',
+                    'monto' => $this->valor,
+                    'metodo_pago' => $this->metodo_pago,
+                    'descripcion' => 'RTO en '.$this->empresa.' - '.$rto->auto->patente,
+                ]
+            );
+        });
 
         $this->showModal = false;
         $this->resetForm();

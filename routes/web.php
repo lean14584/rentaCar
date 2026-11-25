@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Livewire\Alquileres\Index as AlquilerIndex;
 use App\Livewire\Auth\Login;
 use App\Livewire\Autos\Index as AutoIndex;
+use App\Livewire\Caja\Index as CajaIndex;
 use App\Livewire\Calendario\Index as CalendarioIndex;
 use App\Livewire\Clientes\Index as ClienteIndex;
 use App\Livewire\Dashboard;
@@ -34,4 +35,6 @@ Route::middleware('auth')->group(function () {
         Route::get('mantenimientos', MantenimientosIndex::class)->name('mantenimientos');
         Route::get('rto', RtoIndex::class)->name('rto');
     });
+
+    Route::middleware('can:caja')->get('caja', CajaIndex::class)->name('caja.index');
 });

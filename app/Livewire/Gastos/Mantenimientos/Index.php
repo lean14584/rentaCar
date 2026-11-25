@@ -3,9 +3,11 @@
 namespace App\Livewire\Gastos\Mantenimientos;
 
 use App\Models\Auto;
+use App\Models\Caja;
 use App\Models\Mantenimiento;
 use App\Models\Proveedor;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -151,6 +153,26 @@ class Index extends Component
                 $auto->estado = 'En Mantenimiento';
             }
             $auto->save();
+
+            // "Cta Cte" significa que el proveedor lo financia: no sale
+            // plata de la caja todavía, así que no se genera movimiento acá
+            // (el día que exista Proveedores Cta Cte, el pago real se
+            // registrará desde ahí, no desde Caja).
+            if ($this->metodo_pago !== 'Cta Cte') {
+                Caja::updateOrCreate(
+                    ['mantenimiento_id' => $mantenimiento->id],
+                    [
+                        'usuario_id' => Auth::id(),
+                        'auto_id' => $mantenimiento->auto_id,
+                        'tipo' => 'Egreso',
+                        'monto' => $this->valor,
+                        'metodo_pago' => $this->metodo_pago,
+                        'descripcion' => $this->nombre.' - '.$auto->patente,
+                    ]
+                );
+            } else {
+                Caja::where('mantenimiento_id', $mantenimiento->id)->delete();
+            }
         });
 
         $this->showModal = false;

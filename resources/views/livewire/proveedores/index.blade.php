@@ -51,6 +51,9 @@
                             <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ $proveedor->telefono }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-center gap-1">
+                                    <a href="{{ route('proveedores.cta-cte', $proveedor) }}" wire:navigate aria-label="Ver cuenta corriente" class="inline-flex rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800">
+                                        <x-heroicon-o-banknotes class="h-4 w-4" />
+                                    </a>
                                     <button type="button" wire:click="edit({{ $proveedor->id }})" aria-label="Editar proveedor" class="inline-flex rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-800">
                                         <x-heroicon-o-pencil class="h-4 w-4" />
                                     </button>

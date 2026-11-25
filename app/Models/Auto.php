@@ -67,4 +67,9 @@ class Auto extends Model
     {
         return $this->hasMany(Alquiler::class);
     }
+
+    public function cajas(): HasMany
+    {
+        return $this->hasMany(Caja::class);
+    }
 }

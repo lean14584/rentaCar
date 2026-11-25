@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LogoutController;
+use App\Livewire\Alquileres\Index as AlquilerIndex;
 use App\Livewire\Auth\Login;
 use App\Livewire\Autos\Index as AutoIndex;
 use App\Livewire\Clientes\Index as ClienteIndex;
@@ -19,4 +20,5 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:autos')->get('autos', AutoIndex::class)->name('autos.index');
     Route::middleware('can:clientes')->get('clientes', ClienteIndex::class)->name('clientes.index');
     Route::middleware('can:proveedores')->get('proveedores', ProveedorIndex::class)->name('proveedores.index');
+    Route::middleware('can:alquileres')->get('alquileres', AlquilerIndex::class)->name('alquileres.index');
 });

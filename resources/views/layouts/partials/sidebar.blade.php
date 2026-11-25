@@ -10,8 +10,7 @@
         ['permiso' => 'marcas', 'group' => 'Flota', 'pattern' => 'marcas.*', 'href' => $safeRoute('marcas.index'), 'label' => 'Marcas', 'icon' => 'tag'],
         ['permiso' => 'autos', 'group' => 'Flota', 'pattern' => 'autos.*', 'href' => $safeRoute('autos.index'), 'label' => 'Autos', 'icon' => 'truck'],
 
-        ['permiso' => 'alquiler', 'group' => 'Alquileres', 'pattern' => 'alquiler.*', 'href' => $safeRoute('alquiler.index'), 'label' => 'Nuevo alquiler', 'icon' => 'key'],
-        ['permiso' => 'alquiler-listado', 'group' => 'Alquileres', 'pattern' => 'alquiler-listado.*', 'href' => $safeRoute('alquiler-listado.index'), 'label' => 'Alquileres', 'icon' => 'clipboard-document-list'],
+        ['permiso' => 'alquileres', 'group' => 'Alquileres', 'pattern' => 'alquileres.*', 'href' => $safeRoute('alquileres.index'), 'label' => 'Alquileres', 'icon' => 'key'],
         ['permiso' => 'calendar-rental', 'group' => 'Alquileres', 'pattern' => 'calendar-rental', 'href' => $safeRoute('calendar-rental'), 'label' => 'Calendario', 'icon' => 'calendar-days'],
 
         ['permiso' => 'clientes', 'group' => 'Contactos', 'pattern' => 'clientes.*', 'href' => $safeRoute('clientes.index'), 'label' => 'Clientes', 'icon' => 'users'],

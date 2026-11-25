@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
      * pantallas futuras agregan su permiso acá.
      */
     private const PANTALLAS = [
-        'dashboard', 'marcas', 'autos', 'alquiler', 'alquiler-listado', 'calendar-rental',
+        'dashboard', 'marcas', 'autos', 'alquileres', 'calendar-rental',
         'clientes', 'proveedores', 'gastos', 'caja', 'reportes', 'usuarios', 'roles-permisos',
     ];
 

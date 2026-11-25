@@ -16,7 +16,7 @@
         ['permiso' => 'clientes', 'group' => 'Contactos', 'pattern' => 'clientes.*', 'href' => $safeRoute('clientes.index'), 'label' => 'Clientes', 'icon' => 'users'],
         ['permiso' => 'proveedores', 'group' => 'Contactos', 'pattern' => 'proveedores.*', 'href' => $safeRoute('proveedores.index'), 'label' => 'Proveedores', 'icon' => 'building-storefront'],
 
-        ['permiso' => 'gastos', 'group' => 'Gastos', 'pattern' => 'gastos.*', 'href' => $safeRoute('gastos.index'), 'label' => 'Seguros, pólizas y service', 'icon' => 'wrench'],
+        ['permiso' => 'gastos', 'group' => 'Gastos', 'pattern' => 'gastos.*', 'href' => $safeRoute('gastos.seguros'), 'label' => 'Seguros, pólizas y service', 'icon' => 'wrench'],
 
         ['permiso' => 'caja', 'group' => 'Finanzas', 'pattern' => 'caja.*', 'href' => $safeRoute('caja.index'), 'label' => 'Caja', 'icon' => 'banknotes'],
         ['permiso' => 'reportes', 'group' => 'Finanzas', 'pattern' => 'reportes.*', 'href' => $safeRoute('reportes.index'), 'label' => 'Reportes', 'icon' => 'chart-bar'],

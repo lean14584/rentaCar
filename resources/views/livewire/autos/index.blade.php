@@ -54,6 +54,7 @@
                                     'inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold',
                                     'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' => $auto->estado === 'Disponible',
                                     'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' => $auto->estado === 'Alquilado',
+                                    'bg-rose-100 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400' => $auto->estado === 'En Mantenimiento',
                                     'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400' => $auto->estado === 'No Disponible',
                                 ])>{{ $auto->estado }}</span>
                             </td>
@@ -153,6 +154,7 @@
                 <select wire:model="estado" class="{{ $inputClass }}">
                     <option value="Disponible">Disponible</option>
                     <option value="Alquilado">Alquilado</option>
+                    <option value="En Mantenimiento">En Mantenimiento</option>
                     <option value="No Disponible">No Disponible</option>
                 </select>
                 @error('estado') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror

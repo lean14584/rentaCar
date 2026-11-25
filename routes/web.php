@@ -7,6 +7,10 @@ use App\Livewire\Autos\Index as AutoIndex;
 use App\Livewire\Calendario\Index as CalendarioIndex;
 use App\Livewire\Clientes\Index as ClienteIndex;
 use App\Livewire\Dashboard;
+use App\Livewire\Gastos\Mantenimientos\Index as MantenimientosIndex;
+use App\Livewire\Gastos\Polizas\Index as PolizasIndex;
+use App\Livewire\Gastos\Rto\Index as RtoIndex;
+use App\Livewire\Gastos\Seguros\Index as SegurosIndex;
 use App\Livewire\Marcas\Index as MarcaIndex;
 use App\Livewire\Proveedores\Index as ProveedorIndex;
 use Illuminate\Support\Facades\Route;
@@ -23,4 +27,11 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:proveedores')->get('proveedores', ProveedorIndex::class)->name('proveedores.index');
     Route::middleware('can:alquileres')->get('alquileres', AlquilerIndex::class)->name('alquileres.index');
     Route::middleware('can:calendar-rental')->get('calendario', CalendarioIndex::class)->name('calendar-rental');
+
+    Route::middleware('can:gastos')->prefix('gastos')->name('gastos.')->group(function () {
+        Route::get('seguros', SegurosIndex::class)->name('seguros');
+        Route::get('polizas', PolizasIndex::class)->name('polizas');
+        Route::get('mantenimientos', MantenimientosIndex::class)->name('mantenimientos');
+        Route::get('rto', RtoIndex::class)->name('rto');
+    });
 });

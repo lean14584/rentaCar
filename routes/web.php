@@ -6,6 +6,7 @@ use App\Livewire\Auth\Login;
 use App\Livewire\Autos\Index as AutoIndex;
 use App\Livewire\Caja\Index as CajaIndex;
 use App\Livewire\Calendario\Index as CalendarioIndex;
+use App\Livewire\Clientes\CtaCte as ClienteCtaCte;
 use App\Livewire\Clientes\Index as ClienteIndex;
 use App\Livewire\Dashboard;
 use App\Livewire\Gastos\Mantenimientos\Index as MantenimientosIndex;
@@ -29,6 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:marcas')->get('marcas', MarcaIndex::class)->name('marcas.index');
     Route::middleware('can:autos')->get('autos', AutoIndex::class)->name('autos.index');
     Route::middleware('can:clientes')->get('clientes', ClienteIndex::class)->name('clientes.index');
+    Route::middleware('can:clientes')->get('clientes/{cliente}/cta-cte', ClienteCtaCte::class)->name('clientes.cta-cte');
     Route::middleware('can:proveedores')->get('proveedores', ProveedorIndex::class)->name('proveedores.index');
     Route::middleware('can:proveedores')->get('proveedores/{proveedor}/cta-cte', ProveedorCtaCte::class)->name('proveedores.cta-cte');
     Route::middleware('can:alquileres')->get('alquileres', AlquilerIndex::class)->name('alquileres.index');

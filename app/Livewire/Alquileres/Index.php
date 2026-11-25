@@ -8,6 +8,7 @@ use App\Models\Cadena;
 use App\Models\Caja;
 use App\Models\CajaSesion;
 use App\Models\Cliente;
+use App\Models\ClienteCtaCte;
 use App\Models\Matafuego;
 use App\Models\Silla;
 use Carbon\Carbon;
@@ -267,6 +268,22 @@ class Index extends Component
                 Caja::updateOrCreate(['alquiler_id' => $alquiler->id], $datosCaja);
             } else {
                 Caja::where('alquiler_id', $alquiler->id)->delete();
+            }
+
+            // El saldo pendiente queda como Cargo en la cuenta corriente del
+            // cliente — ahí es donde se termina de cobrar, no acá.
+            if ((float) $this->saldo > 0) {
+                ClienteCtaCte::updateOrCreate(
+                    ['alquiler_id' => $alquiler->id],
+                    [
+                        'cliente_id' => $alquiler->cliente_id,
+                        'tipo' => 'Cargo',
+                        'importe' => $this->saldo,
+                        'descripcion' => 'Saldo pendiente alquiler '.$auto->patente.' ('.$alquiler->fecha_inicio->format('d/m/Y').' - '.$alquiler->fecha_fin->format('d/m/Y').')',
+                    ]
+                );
+            } else {
+                ClienteCtaCte::where('alquiler_id', $alquiler->id)->delete();
             }
         });
 

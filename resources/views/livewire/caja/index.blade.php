@@ -9,6 +9,34 @@
 
     <x-flash-messages />
 
+    <div class="mb-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        @if ($this->sesionAbierta)
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="relative flex h-2.5 w-2.5">
+                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                    </span>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                        Caja abierta desde las <strong>{{ $this->sesionAbierta->hora_apertura->format('H:i') }}</strong>
+                        por <strong>{{ $this->sesionAbierta->usuarioApertura->name }}</strong>
+                        con $ {{ number_format((float) $this->sesionAbierta->monto_apertura, 2, ',', '.') }} de apertura.
+                    </p>
+                </div>
+                <button type="button" wire:click="abrirCierre" class="rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-500">
+                    Cerrar caja
+                </button>
+            </div>
+        @else
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <p class="text-sm text-gray-500 dark:text-gray-400">La caja está cerrada. Abrila para empezar a registrar el turno.</p>
+                <button type="button" wire:click="abrirApertura" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500">
+                    Abrir caja
+                </button>
+            </div>
+        @endif
+    </div>
+
     <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
             <p class="text-sm text-gray-500 dark:text-gray-400">Ingresos</p>
@@ -99,6 +127,116 @@
     <div class="mt-4">
         {{ $movimientos->links() }}
     </div>
+
+    <div class="mt-8">
+        <h2 class="mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">Historial de cajas</h2>
+        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <div class="overflow-x-auto">
+                <table class="w-full text-center text-sm">
+                    <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
+                        <tr>
+                            <th class="px-4 py-3">Fecha</th>
+                            <th class="px-4 py-3">Apertura</th>
+                            <th class="px-4 py-3">Cierre</th>
+                            <th class="px-4 py-3">Monto apertura</th>
+                            <th class="px-4 py-3">Monto cierre</th>
+                            <th class="px-4 py-3">Diferencia</th>
+                            <th class="px-4 py-3">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @forelse ($this->sesionesRecientes as $sesion)
+                            <tr wire:key="sesion-{{ $sesion->id }}">
+                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ $sesion->fecha->format('d/m/Y') }}</td>
+                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ $sesion->hora_apertura->format('H:i') }} · {{ $sesion->usuarioApertura->name }}</td>
+                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">
+                                    {{ $sesion->hora_cierre ? $sesion->hora_cierre->format('H:i').' · '.$sesion->usuarioCierre?->name : '—' }}
+                                </td>
+                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">$ {{ number_format((float) $sesion->monto_apertura, 2, ',', '.') }}</td>
+                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ $sesion->monto_cierre !== null ? '$ '.number_format((float) $sesion->monto_cierre, 2, ',', '.') : '—' }}</td>
+                                <td class="px-4 py-3 font-semibold {{ (float) $sesion->diferencia === 0.0 ? 'text-gray-400' : ((float) $sesion->diferencia > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400') }}">
+                                    {{ $sesion->diferencia !== null ? '$ '.number_format((float) $sesion->diferencia, 2, ',', '.') : '—' }}
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span @class([
+                                        'inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                                        'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400' => $sesion->estado === 'Abierta',
+                                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' => $sesion->estado === 'Cerrada',
+                                    ])>{{ $sesion->estado }}</span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-4 py-10 text-gray-400">Todavía no se abrió ninguna caja.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <x-modal wireModel="showAperturaModal" title="Abrir caja" maxWidth="sm">
+        <form wire:submit="abrirCaja" class="space-y-4">
+            <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Monto de apertura *</label>
+                <input
+                    type="number" step="0.01" wire:model="monto_apertura" autofocus
+                    class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-100"
+                >
+                <p class="mt-1 text-xs text-gray-400">El efectivo que hay físicamente en la caja al arrancar el turno.</p>
+                @error('monto_apertura') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button type="button" wire:click="$set('showAperturaModal', false)" class="rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                    Cancelar
+                </button>
+                <button type="submit" wire:loading.attr="disabled" wire:target="abrirCaja" class="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 disabled:opacity-50">
+                    Abrir
+                </button>
+            </div>
+        </form>
+    </x-modal>
+
+    <x-modal wireModel="showCierreModal" title="Cerrar caja" maxWidth="sm">
+        <form wire:submit="cerrarCaja" class="space-y-4">
+            <div>
+                <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Monto contado *</label>
+                <input
+                    type="number" step="0.01" wire:model.live="monto_cierre" autofocus
+                    class="w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm shadow-sm focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-100"
+                >
+                <p class="mt-1 text-xs text-gray-400">El efectivo que contaste físicamente en la caja.</p>
+                @error('monto_cierre') <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm dark:border-gray-800 dark:bg-gray-800/40">
+                <div class="flex justify-between py-1">
+                    <span class="text-gray-500 dark:text-gray-400">Esperado (apertura + Efectivo del turno)</span>
+                    <span class="font-medium text-gray-900 dark:text-gray-100">$ {{ number_format($this->montoEsperadoCierre, 2, ',', '.') }}</span>
+                </div>
+                <div class="flex justify-between border-t border-gray-200 py-1 pt-2 dark:border-gray-700">
+                    <span class="font-semibold text-gray-700 dark:text-gray-300">Diferencia</span>
+                    <span @class([
+                        'font-bold',
+                        'text-gray-400' => $this->diferenciaCierre === 0.0,
+                        'text-emerald-600 dark:text-emerald-400' => $this->diferenciaCierre > 0,
+                        'text-rose-600 dark:text-rose-400' => $this->diferenciaCierre < 0,
+                    ])>$ {{ number_format($this->diferenciaCierre, 2, ',', '.') }}</span>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button type="button" wire:click="$set('showCierreModal', false)" class="rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                    Cancelar
+                </button>
+                <button type="submit" wire:loading.attr="disabled" wire:target="cerrarCaja" class="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 disabled:opacity-50">
+                    Cerrar
+                </button>
+            </div>
+        </form>
+    </x-modal>
 
     <x-modal wireModel="showModal" :title="$editingId ? 'Editar movimiento' : 'Nuevo movimiento'" maxWidth="lg">
         <form wire:submit="save" class="grid grid-cols-1 gap-4 sm:grid-cols-2">

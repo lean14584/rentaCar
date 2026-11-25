@@ -28,4 +28,9 @@ class Proveedor extends Model
     {
         return $this->hasMany(Mantenimiento::class);
     }
+
+    public function ctaCte(): HasMany
+    {
+        return $this->hasMany(ProveedorCtaCte::class, 'proveedor_id');
+    }
 }

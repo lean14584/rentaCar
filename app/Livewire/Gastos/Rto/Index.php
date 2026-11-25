@@ -4,6 +4,7 @@ namespace App\Livewire\Gastos\Rto;
 
 use App\Models\Auto;
 use App\Models\Caja;
+use App\Models\CajaSesion;
 use App\Models\Rto;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -93,17 +94,19 @@ class Index extends Component
             ]);
             $rto->save();
 
-            Caja::updateOrCreate(
-                ['rto_id' => $rto->id],
-                [
-                    'usuario_id' => Auth::id(),
-                    'auto_id' => $rto->auto_id,
-                    'tipo' => 'Egreso',
-                    'monto' => $this->valor,
-                    'metodo_pago' => $this->metodo_pago,
-                    'descripcion' => 'RTO en '.$this->empresa.' - '.$rto->auto->patente,
-                ]
-            );
+            $cajaExistente = Caja::where('rto_id', $rto->id)->first();
+            $datosCaja = [
+                'usuario_id' => Auth::id(),
+                'auto_id' => $rto->auto_id,
+                'tipo' => 'Egreso',
+                'monto' => $this->valor,
+                'metodo_pago' => $this->metodo_pago,
+                'descripcion' => 'RTO en '.$this->empresa.' - '.$rto->auto->patente,
+            ];
+            if (! $cajaExistente) {
+                $datosCaja['caja_sesion_id'] = CajaSesion::abierta()?->id;
+            }
+            Caja::updateOrCreate(['rto_id' => $rto->id], $datosCaja);
         });
 
         $this->showModal = false;

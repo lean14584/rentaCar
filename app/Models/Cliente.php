@@ -26,4 +26,9 @@ class Cliente extends Model
     {
         return $this->hasMany(Alquiler::class);
     }
+
+    public function ctaCte(): HasMany
+    {
+        return $this->hasMany(ClienteCtaCte::class, 'cliente_id');
+    }
 }

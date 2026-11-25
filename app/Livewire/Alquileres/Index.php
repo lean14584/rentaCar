@@ -6,6 +6,7 @@ use App\Models\Alquiler;
 use App\Models\Auto;
 use App\Models\Cadena;
 use App\Models\Caja;
+use App\Models\CajaSesion;
 use App\Models\Cliente;
 use App\Models\Matafuego;
 use App\Models\Silla;
@@ -248,17 +249,22 @@ class Index extends Component
             // alquiler — si se edita el monto o se borra el alquiler, el
             // movimiento se actualiza/borra con él en vez de quedar suelto.
             if ((float) $this->entrega > 0) {
-                Caja::updateOrCreate(
-                    ['alquiler_id' => $alquiler->id],
-                    [
-                        'usuario_id' => Auth::id(),
-                        'auto_id' => $alquiler->auto_id,
-                        'tipo' => 'Ingreso',
-                        'monto' => $this->entrega,
-                        'metodo_pago' => $this->metodo_pago,
-                        'descripcion' => 'Entrega por alquiler a '.$alquiler->cliente->nombre,
-                    ]
-                );
+                $cajaExistente = Caja::where('alquiler_id', $alquiler->id)->first();
+                $datosCaja = [
+                    'usuario_id' => Auth::id(),
+                    'auto_id' => $alquiler->auto_id,
+                    'tipo' => 'Ingreso',
+                    'monto' => $this->entrega,
+                    'metodo_pago' => $this->metodo_pago,
+                    'descripcion' => 'Entrega por alquiler a '.$alquiler->cliente->nombre,
+                ];
+                // La sesión de caja se fija solo al crear el movimiento — si
+                // ya existía (se está editando el alquiler), no se mueve a
+                // la sesión actual aunque haya cambiado desde que se creó.
+                if (! $cajaExistente) {
+                    $datosCaja['caja_sesion_id'] = CajaSesion::abierta()?->id;
+                }
+                Caja::updateOrCreate(['alquiler_id' => $alquiler->id], $datosCaja);
             } else {
                 Caja::where('alquiler_id', $alquiler->id)->delete();
             }

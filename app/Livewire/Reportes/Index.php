@@ -5,8 +5,11 @@ namespace App\Livewire\Reportes;
 use App\Models\Alquiler;
 use App\Models\Auto;
 use App\Models\Caja;
+use App\Models\Cliente;
 use App\Models\Mantenimiento;
 use App\Models\Poliza;
+use App\Models\Proveedor;
+use App\Models\Rto;
 use App\Models\Seguro;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -109,6 +112,69 @@ class Index extends Component
             ->whereBetween('fecha_inicio', [$this->desde, $this->hasta])
             ->orderBy('fecha_fin')
             ->get();
+    }
+
+    #[Computed]
+    public function rtoPorVencer()
+    {
+        return Rto::query()
+            ->with('auto')
+            ->whereBetween('fecha_fin', [$this->desde, $this->hasta])
+            ->orderBy('fecha_fin')
+            ->get();
+    }
+
+    /** Saldo total (Cargo − Pago) por cliente, igual criterio que su Cta Cte individual. */
+    #[Computed]
+    public function clientesConSaldo()
+    {
+        return Cliente::query()
+            ->withSum(['ctaCte as cargos' => fn ($q) => $q->where('tipo', 'Cargo')], 'importe')
+            ->withSum(['ctaCte as pagos' => fn ($q) => $q->where('tipo', 'Pago')], 'importe')
+            ->get()
+            ->map(function (Cliente $cliente) {
+                $cliente->saldo = (float) ($cliente->cargos ?? 0) - (float) ($cliente->pagos ?? 0);
+
+                return $cliente;
+            })
+            ->filter(fn (Cliente $cliente) => $cliente->saldo > 0)
+            ->sortByDesc('saldo')
+            ->values();
+    }
+
+    /** Saldo total (Cargo − Pago) por proveedor, igual criterio que su Cta Cte individual. */
+    #[Computed]
+    public function proveedoresConSaldo()
+    {
+        return Proveedor::query()
+            ->withSum(['ctaCte as cargos' => fn ($q) => $q->where('tipo', 'Cargo')], 'importe')
+            ->withSum(['ctaCte as pagos' => fn ($q) => $q->where('tipo', 'Pago')], 'importe')
+            ->get()
+            ->map(function (Proveedor $proveedor) {
+                $proveedor->saldo = (float) ($proveedor->cargos ?? 0) - (float) ($proveedor->pagos ?? 0);
+
+                return $proveedor;
+            })
+            ->filter(fn (Proveedor $proveedor) => $proveedor->saldo > 0)
+            ->sortByDesc('saldo')
+            ->values();
+    }
+
+    /** A 1000km o menos del cambio de aceite programado (o ya pasado). */
+    #[Computed]
+    public function autosProximosService()
+    {
+        return Auto::query()
+            ->whereNotNull('cambio_aceite')
+            ->get()
+            ->map(function (Auto $auto) {
+                $auto->km_restantes = $auto->cambio_aceite - $auto->kilometros;
+
+                return $auto;
+            })
+            ->filter(fn (Auto $auto) => $auto->km_restantes <= 1000)
+            ->sortBy('km_restantes')
+            ->values();
     }
 
     public function render()

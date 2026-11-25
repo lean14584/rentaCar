@@ -6,9 +6,13 @@
             'devolver' => 'Autos a devolver',
             'seguros' => 'Seguros por vencer',
             'polizas' => 'Pólizas por vencer',
+            'rto' => 'RTO por vencer',
             'ganancias' => 'Ganancias por auto',
             'alquilados' => 'Autos más alquilados',
             'mantenimientos' => 'Mantenimientos por finalizar',
+            'clientes_saldo' => 'Clientes con saldo',
+            'proveedores_saldo' => 'Proveedores con saldo',
+            'service' => 'Autos próximos a service',
         ];
         $inputClass = 'px-4 py-3 text-left';
     @endphp
@@ -137,6 +141,37 @@
                 </table>
             @endif
 
+            @if ($tab === 'rto')
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
+                        <tr>
+                            <th class="{{ $inputClass }}">Auto</th>
+                            <th class="{{ $inputClass }}">Empresa</th>
+                            <th class="{{ $inputClass }}">Vigencia hasta</th>
+                            <th class="{{ $inputClass }}">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @forelse ($this->rtoPorVencer as $rto)
+                            <tr wire:key="rto-{{ $rto->id }}">
+                                <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{{ $rto->auto->patente }}</td>
+                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">{{ $rto->empresa }}</td>
+                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ $rto->fecha_fin->format('d/m/Y') }}</td>
+                                <td class="px-4 py-3">
+                                    @if ($rto->fecha_fin->isPast())
+                                        <span class="inline-flex rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">Vencida</span>
+                                    @else
+                                        <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">Por vencer</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="px-4 py-10 text-center text-gray-400">No hay RTO con vencimiento en el período seleccionado.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            @endif
+
             @if ($tab === 'ganancias')
                 <table class="w-full text-sm">
                     <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
@@ -216,6 +251,83 @@
                 </table>
             @endif
 
+            @if ($tab === 'clientes_saldo')
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
+                        <tr>
+                            <th class="{{ $inputClass }}">Cliente</th>
+                            <th class="{{ $inputClass }}">Cargos</th>
+                            <th class="{{ $inputClass }}">Pagos</th>
+                            <th class="{{ $inputClass }}">Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @forelse ($this->clientesConSaldo as $cliente)
+                            <tr wire:key="cliente-saldo-{{ $cliente->id }}">
+                                <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{{ $cliente->nombre }}</td>
+                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">$ {{ number_format((float) $cliente->cargos, 2, ',', '.') }}</td>
+                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">$ {{ number_format((float) $cliente->pagos, 2, ',', '.') }}</td>
+                                <td class="px-4 py-3 font-semibold text-rose-600 dark:text-rose-400">$ {{ number_format($cliente->saldo, 2, ',', '.') }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="px-4 py-10 text-center text-gray-400">Ningún cliente tiene saldo pendiente.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            @endif
+
+            @if ($tab === 'proveedores_saldo')
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
+                        <tr>
+                            <th class="{{ $inputClass }}">Proveedor</th>
+                            <th class="{{ $inputClass }}">Cargos</th>
+                            <th class="{{ $inputClass }}">Pagos</th>
+                            <th class="{{ $inputClass }}">Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @forelse ($this->proveedoresConSaldo as $proveedor)
+                            <tr wire:key="proveedor-saldo-{{ $proveedor->id }}">
+                                <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{{ $proveedor->nombre }}</td>
+                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">$ {{ number_format((float) $proveedor->cargos, 2, ',', '.') }}</td>
+                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">$ {{ number_format((float) $proveedor->pagos, 2, ',', '.') }}</td>
+                                <td class="px-4 py-3 font-semibold text-rose-600 dark:text-rose-400">$ {{ number_format($proveedor->saldo, 2, ',', '.') }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="px-4 py-10 text-center text-gray-400">Ningún proveedor tiene saldo pendiente.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            @endif
+
+            @if ($tab === 'service')
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-xs uppercase text-gray-500 dark:bg-gray-800/50 dark:text-gray-400">
+                        <tr>
+                            <th class="{{ $inputClass }}">Auto</th>
+                            <th class="{{ $inputClass }}">Km actuales</th>
+                            <th class="{{ $inputClass }}">Km próx. cambio de aceite</th>
+                            <th class="{{ $inputClass }}">Km restantes</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                        @forelse ($this->autosProximosService as $auto)
+                            <tr wire:key="service-{{ $auto->id }}">
+                                <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{{ $auto->patente }}</td>
+                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ number_format($auto->kilometros) }}</td>
+                                <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ number_format($auto->cambio_aceite) }}</td>
+                                <td class="px-4 py-3 font-semibold {{ $auto->km_restantes <= 0 ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400' }}">
+                                    {{ $auto->km_restantes <= 0 ? 'Vencido hace '.number_format(abs($auto->km_restantes)).'km' : number_format($auto->km_restantes).'km' }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="px-4 py-10 text-center text-gray-400">Ningún auto está cerca de su próximo service.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            @endif
+
         </div>
     </div>
 
@@ -290,6 +402,27 @@
             @endforelse
         @endif
 
+        @if ($tab === 'rto')
+            @forelse ($this->rtoPorVencer as $rto)
+                <div wire:key="rto-card-{{ $rto->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <p class="truncate font-semibold text-gray-900 dark:text-gray-100">{{ $rto->auto->patente }}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $rto->empresa }}</p>
+                        </div>
+                        @if ($rto->fecha_fin->isPast())
+                            <span class="inline-flex shrink-0 rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">Vencida</span>
+                        @else
+                            <span class="inline-flex shrink-0 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">Por vencer</span>
+                        @endif
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Vigencia hasta {{ $rto->fecha_fin->format('d/m/Y') }}</p>
+                </div>
+            @empty
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">No hay RTO con vencimiento en el período seleccionado.</div>
+            @endforelse
+        @endif
+
         @if ($tab === 'ganancias')
             @forelse ($this->gananciasPorAuto as $auto)
                 <div wire:key="ganancia-card-{{ $auto->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
@@ -336,6 +469,48 @@
                 </div>
             @empty
                 <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">No hay mantenimientos en curso iniciados en el período seleccionado.</div>
+            @endforelse
+        @endif
+
+        @if ($tab === 'clientes_saldo')
+            @forelse ($this->clientesConSaldo as $cliente)
+                <div wire:key="cliente-saldo-card-{{ $cliente->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <p class="font-semibold text-gray-900 dark:text-gray-100">{{ $cliente->nombre }}</p>
+                    <div class="mt-2 flex items-center justify-between text-sm">
+                        <span class="text-gray-500 dark:text-gray-400">Cargos: $ {{ number_format((float) $cliente->cargos, 2, ',', '.') }} · Pagos: $ {{ number_format((float) $cliente->pagos, 2, ',', '.') }}</span>
+                    </div>
+                    <p class="mt-1 text-right font-semibold text-rose-600 dark:text-rose-400">Saldo: $ {{ number_format($cliente->saldo, 2, ',', '.') }}</p>
+                </div>
+            @empty
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">Ningún cliente tiene saldo pendiente.</div>
+            @endforelse
+        @endif
+
+        @if ($tab === 'proveedores_saldo')
+            @forelse ($this->proveedoresConSaldo as $proveedor)
+                <div wire:key="proveedor-saldo-card-{{ $proveedor->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <p class="font-semibold text-gray-900 dark:text-gray-100">{{ $proveedor->nombre }}</p>
+                    <div class="mt-2 flex items-center justify-between text-sm">
+                        <span class="text-gray-500 dark:text-gray-400">Cargos: $ {{ number_format((float) $proveedor->cargos, 2, ',', '.') }} · Pagos: $ {{ number_format((float) $proveedor->pagos, 2, ',', '.') }}</span>
+                    </div>
+                    <p class="mt-1 text-right font-semibold text-rose-600 dark:text-rose-400">Saldo: $ {{ number_format($proveedor->saldo, 2, ',', '.') }}</p>
+                </div>
+            @empty
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">Ningún proveedor tiene saldo pendiente.</div>
+            @endforelse
+        @endif
+
+        @if ($tab === 'service')
+            @forelse ($this->autosProximosService as $auto)
+                <div wire:key="service-card-{{ $auto->id }}" class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <p class="font-semibold text-gray-900 dark:text-gray-100">{{ $auto->patente }}</p>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ number_format($auto->kilometros) }}km actuales · próximo a los {{ number_format($auto->cambio_aceite) }}km</p>
+                    <p class="mt-1 text-right font-semibold {{ $auto->km_restantes <= 0 ? 'text-rose-600 dark:text-rose-400' : 'text-amber-600 dark:text-amber-400' }}">
+                        {{ $auto->km_restantes <= 0 ? 'Vencido hace '.number_format(abs($auto->km_restantes)).'km' : 'Faltan '.number_format($auto->km_restantes).'km' }}
+                    </p>
+                </div>
+            @empty
+                <div class="rounded-2xl border border-gray-200 bg-white p-6 text-center text-gray-400 dark:border-gray-800 dark:bg-gray-900">Ningún auto está cerca de su próximo service.</div>
             @endforelse
         @endif
     </div>
